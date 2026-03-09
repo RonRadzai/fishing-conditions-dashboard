@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fishing Conditions Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb bg-orb-left"></div>
+    <div class="bg-orb bg-orb-right"></div>
+    <main class="layout">
+      <header class="hero">
+        <p class="eyebrow">Trip Prep</p>
+        <h1>Fishing Conditions Dashboard</h1>
+        <p id="location-summary" class="subtitle">Loading location...</p>
+      </header>
+
+      <section class="card settings-card">
+        <h2>Location</h2>
+        <p class="help-text">Default ZIP is <strong>24060</strong>. You can change it any time.</p>
+        <form id="zip-form" class="zip-form">
+          <label for="zip-input">US ZIP code</label>
+          <div class="zip-controls">
+            <input id="zip-input" name="zip" maxlength="5" pattern="[0-9]{5}" required />
+            <button type="submit">Update</button>
+          </div>
+        </form>
+        <p id="zip-message" class="message"></p>
+      </section>
+
+      <section class="grid">
+        <article class="card" id="weather-card">
+          <div class="card-title-row">
+            <h2>Weather (Today)</h2>
+            <p class="card-meta">Now + 8h</p>
+          </div>
+          <p id="weather-updated" class="card-meta"></p>
+          <div id="weather-content" class="content-block"></div>
+        </article>
+
+        <article class="card" id="aep-card">
+          <div class="card-title-row">
+            <h2>AEP Whitethorne Flow</h2>
+            <p class="card-meta">ET, -2h to +8h</p>
+          </div>
+          <p id="aep-updated" class="card-meta"></p>
+          <div id="aep-content" class="content-block"></div>
+        </article>
+
+        <article class="card" id="usgs-card">
+          <div class="card-title-row">
+            <h2>USGS Radford</h2>
+            <p class="card-meta">Station 03171000</p>
+          </div>
+          <div id="usgs-content" class="content-block"></div>
+        </article>
+
+        <article class="card wide-card" id="solunar-card">
+          <div class="card-title-row">
+            <h2>Solunar (7 Days)</h2>
+            <p class="card-meta">Sun + Moon windows</p>
+          </div>
+          <div id="solunar-content" class="content-block"></div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
