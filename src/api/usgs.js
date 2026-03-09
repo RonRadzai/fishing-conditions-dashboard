@@ -12,15 +12,15 @@ function pluckValueByCode(features, code) {
   }
 
   const props = match.properties || {};
-  const value = Number(props.result_va);
+  const value = Number(props.value);
   if (!Number.isFinite(value)) {
     return null;
   }
 
   return {
     value,
-    dateTime: props.result_dt || null,
-    unit: props.parameter_unit || null,
+    dateTime: props.time || null,
+    unit: props.unit_of_measure || null,
   };
 }
 
