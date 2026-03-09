@@ -41,7 +41,7 @@ Then open `http://localhost:5500`.
 - On load, the app gets coordinates from ZIP, then fetches all cards in parallel.
 - If one API fails, only that card shows an error; the rest still render.
 - AEP card:
-  - Tries AEP plant levels endpoint for New River / Claytor current values
+  - Scrapes AEP public hydro page HTML (New River table) for Claytor current values
   - Shows current flow (cfs) + gage height (ft)
   - Shows error + source link if AEP request is blocked in browser
 

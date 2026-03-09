@@ -1,81 +1,64 @@
-import { EASTERN_TIMEZONE, formatUsDateTime, formatUsHour } from "../utils.js";
-
-const AEP_FORECAST_URL =
-  "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch";
+const AEP_SCRAPE_URL = "https://aep-q.aep.com/recreation/hydro/";
 const AEP_REFERENCE_URL = "https://www.aep.com/recreation/hydro/whitethornelaunch/";
 
-function toHourKeyEastern(timestampMs) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: EASTERN_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    hour12: false,
-  })
-    .format(new Date(timestampMs))
-    .replace(",", "");
+function asNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
 }
 
-function buildTargetKeys(currentDateTimeMs) {
-  const floorHour = Math.floor(currentDateTimeMs / 3600000) * 3600000;
-  const keys = [];
-  for (let i = -2; i <= 8; i += 1) {
-    const ts = floorHour + i * 3600000;
-    keys.push({
-      key: toHourKeyEastern(ts),
-      label: formatUsHour(new Date(ts), EASTERN_TIMEZONE),
-      ts,
-    });
-  }
-  return keys;
+function stripTags(input) {
+  return input.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
 }
 
-export async function getAepFlowWindow() {
-  const response = await fetch(AEP_FORECAST_URL);
-  if (!response.ok) {
-    throw new Error("AEP forecast request failed.");
-  }
-
-  const payload = await response.json();
-  const points = Array.isArray(payload.forecast) ? payload.forecast : [];
-  const nowMs = Number(payload.currentDateTime);
-  if (!Number.isFinite(nowMs)) {
-    throw new Error("AEP payload missing currentDateTime.");
-  }
-
-  const targets = buildTargetKeys(nowMs);
-  const latestPerHour = new Map();
-
-  for (const point of points) {
-    const [timeMs, flow] = point;
-    if (!Number.isFinite(timeMs) || !Number.isFinite(flow)) {
+function parseProjectRow(html, projectName) {
+  const rowRegex = /<tr>([\s\S]*?)<\/tr>/gi;
+  let match;
+  while ((match = rowRegex.exec(html)) !== null) {
+    const row = match[1];
+    if (!new RegExp(`>${projectName}<`, "i").test(row)) {
       continue;
     }
-    const key = toHourKeyEastern(timeMs);
-    const existing = latestPerHour.get(key);
-    if (!existing || timeMs > existing.timeMs) {
-      latestPerHour.set(key, { timeMs, flow });
+
+    const cells = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) => stripTags(m[1]));
+    if (cells.length < 5) {
+      return null;
     }
+
+    return {
+      project: cells[0],
+      gageHeightFt: asNumber(cells[3]),
+      flowCfs: asNumber(cells[4]),
+    };
   }
 
-  const windowHours = targets.map(({ key, label, ts }) => {
-    const point = latestPerHour.get(key);
-    return {
-      label,
-      hourTs: ts,
-      flow: point ? point.flow : null,
-      pointTs: point ? point.timeMs : null,
-    };
-  });
+  return null;
+}
 
-  const validPoints = windowHours.filter((h) => h.flow !== null);
+export async function getAepCurrent(projectName = "Claytor") {
+  const response = await fetch(AEP_SCRAPE_URL);
+  if (!response.ok) {
+    throw new Error("AEP hydro page request failed.");
+  }
+
+  const html = await response.text();
+  const newRiverStart = html.indexOf("New River Flows &amp; Forecasts");
+  if (newRiverStart < 0) {
+    throw new Error("Could not find New River section on AEP page.");
+  }
+
+  const section = html.slice(newRiverStart, newRiverStart + 20000);
+  const project = parseProjectRow(section, projectName);
+  if (!project) {
+    throw new Error(`Could not find ${projectName} row in AEP table.`);
+  }
+
+  const updatedMatch = section.match(/Data last updated on <span>(.*?)<\/span>/i);
+
   return {
     sourceUrl: AEP_REFERENCE_URL,
-    lastUpdated: payload.lastUpdated ? formatUsDateTime(new Date(payload.lastUpdated), EASTERN_TIMEZONE) : "Unknown",
-    timezone: "ET",
-    hours: windowHours,
-    chartMin: validPoints.length ? Math.min(...validPoints.map((h) => h.flow)) : null,
-    chartMax: validPoints.length ? Math.max(...validPoints.map((h) => h.flow)) : null,
+    project: project.project,
+    flowCfs: project.flowCfs,
+    gageHeightFt: project.gageHeightFt,
+    updated: updatedMatch ? stripTags(updatedMatch[1]) : null,
   };
 }
