@@ -3,7 +3,7 @@
 A beginner-friendly fishing dashboard that combines:
 
 - Solunar data (sun/moon + major/minor periods)
-- AEP Whitethorne hourly flow window (`now - 2h` to `now + 8h`, Eastern Time)
+- AEP current flow + gage height (AEP-only; shows error if AEP is unavailable)
 - USGS Radford reference readings
 - Same-day weather (`now + next 8h`)
 
@@ -41,10 +41,9 @@ Then open `http://localhost:5500`.
 - On load, the app gets coordinates from ZIP, then fetches all cards in parallel.
 - If one API fails, only that card shows an error; the rest still render.
 - AEP card:
-  - Uses `WhitethorneLaunch` forecast endpoint
-  - Converts points into hourly ET buckets
-  - Uses latest 15-minute value per hour
-  - Shows list + mini chart
+  - Tries AEP plant levels endpoint for New River / Claytor current values
+  - Shows current flow (cfs) + gage height (ft)
+  - Shows error + source link if AEP request is blocked in browser
 
 ## Deploy to GitHub Pages
 

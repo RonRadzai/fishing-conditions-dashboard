@@ -1,13 +1,12 @@
 import { getCoordinatesFromZip } from "./api/zip.js";
 import { getSolunarRange } from "./api/solunar.js";
-import { getAepFlowWindow } from "./api/aep.js";
+import { getAepCurrent } from "./api/aep.js";
 import { getUsgsRadfordLatest } from "./api/usgs.js";
 import { getHourlyWeather } from "./api/weather.js";
 import {
   EASTERN_TIMEZONE,
   escapeHtml,
   formatDateLabel,
-  formatUsDateTime,
   formatUsHour,
   getLocalZip,
   getTzIntegerFromBrowser,
@@ -59,52 +58,28 @@ function renderWeather(weather) {
   setHtml(el.weatherContent, `<ul class="table-list">${rows}</ul>`);
 }
 
-function buildChartSvg(hours) {
-  const usable = hours.filter((h) => h.flow !== null);
-  if (usable.length < 2) {
-    return "";
-  }
-
-  const width = 420;
-  const height = 110;
-  const pad = 14;
-  const values = usable.map((h) => h.flow);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = Math.max(max - min, 1);
-  const step = (width - pad * 2) / (usable.length - 1);
-
-  const points = usable
-    .map((h, i) => {
-      const x = pad + i * step;
-      const y = height - pad - ((h.flow - min) / range) * (height - pad * 2);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-
-  const areaPoints = `${pad},${height - pad} ${points} ${width - pad},${height - pad}`;
-  return `<svg class="mini-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="AEP flow trend">
-    <polygon class="chart-area" points="${areaPoints}"></polygon>
-    <polyline class="chart-line" points="${points}"></polyline>
-  </svg>`;
-}
-
 function renderAep(aep) {
-  const chart = buildChartSvg(aep.hours);
-  const rows = aep.hours
-    .map((h) => {
-      const value = h.flow === null ? "N/A" : `${h.flow.toLocaleString()} cfs`;
-      return `<li>
-        <span class="table-time">${escapeHtml(h.label)}</span>
-        <span class="table-detail">${escapeHtml(value)}</span>
-      </li>`;
-    })
-    .join("");
+  const flow = aep.flowCfs === null ? "N/A" : `${aep.flowCfs.toLocaleString()} cfs`;
+  const gage = aep.gageHeightFt === null ? "N/A" : `${aep.gageHeightFt} ft`;
+  el.aepUpdated.textContent = aep.updated
+    ? `Last update: ${aep.updated}`
+    : "Last update: unknown";
 
-  el.aepUpdated.textContent = `Last update: ${aep.lastUpdated} ET`;
   setHtml(
     el.aepContent,
-    `${chart}<ul class="table-list">${rows}</ul><p class="card-meta">Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne</a></p>`
+    `<div class="stat-grid">
+      <div class="stat-item">
+        <p class="stat-label">Current Flow (AEP)</p>
+        <p class="stat-value">${escapeHtml(flow)}</p>
+      </div>
+      <div class="stat-item">
+        <p class="stat-label">Gage Height (AEP)</p>
+        <p class="stat-value">${escapeHtml(gage)}</p>
+      </div>
+    </div>
+    <p class="card-meta">Project: ${escapeHtml(
+      aep.project
+    )} (New River). Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne</a></p>`
   );
 }
 
@@ -169,7 +144,7 @@ async function loadDashboard(zip) {
     const tz = getTzIntegerFromBrowser();
     const [weatherResult, aepResult, usgsResult, solunarResult] = await Promise.allSettled([
       getHourlyWeather(location.lat, location.lon, 8),
-      getAepFlowWindow(),
+      getAepCurrent("Claytor"),
       getUsgsRadfordLatest(),
       getSolunarRange(location.lat, location.lon, tz, 7),
     ]);
