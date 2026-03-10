@@ -46,6 +46,18 @@ const MOON_PHASE_STYLES = [
   { pattern: /waning crescent/i, phaseKey: "waning-crescent" },
 ];
 
+const MOON_ICON_PATHS = {
+  new: new URL("./assets/moon/new.svg", import.meta.url).href,
+  full: new URL("./assets/moon/full.svg", import.meta.url).href,
+  "first-quarter": new URL("./assets/moon/first-quarter.svg", import.meta.url).href,
+  "last-quarter": new URL("./assets/moon/last-quarter.svg", import.meta.url).href,
+  "waxing-crescent": new URL("./assets/moon/waxing-crescent.svg", import.meta.url).href,
+  "waning-crescent": new URL("./assets/moon/waning-crescent.svg", import.meta.url).href,
+  "waxing-gibbous": new URL("./assets/moon/waxing-gibbous.svg", import.meta.url).href,
+  "waning-gibbous": new URL("./assets/moon/waning-gibbous.svg", import.meta.url).href,
+  generic: new URL("./assets/moon/generic.svg", import.meta.url).href,
+};
+
 function renderState(target, message, isError = false) {
   setHtml(target, `<p class="state ${isError ? "error" : ""}">${escapeHtml(message)}</p>`);
 }
@@ -55,25 +67,11 @@ function getMoonPhaseDisplay(phase) {
   return match ?? { phaseKey: "generic" };
 }
 
-function renderMoonSvg(phaseKey) {
-  const moonBase = '<circle cx="32" cy="32" r="24" fill="#f5e6b5" />';
-  const shadowBase = '<circle cx="32" cy="32" r="24" fill="#1a2430" />';
-  const clipDef =
-    '<defs><clipPath id="moonClip"><circle cx="32" cy="32" r="24" /></clipPath></defs>';
-
-  const svgByPhase = {
-    new: `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${shadowBase}</svg>`,
-    full: `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}</svg>`,
-    "first-quarter": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<rect x="8" y="8" width="24" height="48" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
-    "last-quarter": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<rect x="32" y="8" width="24" height="48" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
-    "waxing-crescent": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${shadowBase}${clipDef}<circle cx="42" cy="32" r="22" clip-path="url(#moonClip)" fill="#f5e6b5" /></svg>`,
-    "waning-crescent": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${shadowBase}${clipDef}<circle cx="22" cy="32" r="22" clip-path="url(#moonClip)" fill="#f5e6b5" /></svg>`,
-    "waxing-gibbous": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<circle cx="18" cy="32" r="22" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
-    "waning-gibbous": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<circle cx="46" cy="32" r="22" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
-    generic: `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}</svg>`,
-  };
-
-  return svgByPhase[phaseKey] ?? svgByPhase.generic;
+function renderMoonIcon(phaseKey, phaseText, small = false) {
+  const src = MOON_ICON_PATHS[phaseKey] ?? MOON_ICON_PATHS.generic;
+  return `<span class="moon-icon ${small ? "moon-icon-small" : ""}" aria-hidden="true">
+    <img class="moon-svg" src="${src}" alt="" loading="lazy" decoding="async" />
+  </span>`;
 }
 
 function getSolunarHighlightMap(days) {
@@ -253,7 +251,7 @@ function renderUsgs(usgs) {
 function renderMoonPhase(phase) {
   const moon = getMoonPhaseDisplay(phase);
   return `<div class="moon-phase">
-    <span class="moon-icon" aria-hidden="true">${renderMoonSvg(moon.phaseKey)}</span>
+    ${renderMoonIcon(moon.phaseKey, phase)}
     <div>
       <p class="section-label">Moon phase</p>
       <p class="moon-phase-name">${escapeHtml(phase)}</p>
@@ -331,9 +329,7 @@ function renderSolunar(days) {
       return `<article class="solunar-day-card ${highlight.className}">
         <div class="solunar-day-top">
           <h4>${escapeHtml(formatDateLabel(day.date))}</h4>
-          <span class="moon-icon moon-icon-small" aria-hidden="true">${renderMoonSvg(
-            moon.phaseKey
-          )}</span>
+          ${renderMoonIcon(moon.phaseKey, day.moonPhase, true)}
         </div>
         ${
           highlight.label
