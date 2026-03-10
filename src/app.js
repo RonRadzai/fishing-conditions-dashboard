@@ -36,14 +36,14 @@ const staticData = {
 };
 
 const MOON_PHASE_STYLES = [
-  { pattern: /new/i, className: "moon-new", symbol: "New" },
-  { pattern: /waxing crescent/i, className: "moon-waxing-crescent", symbol: "Wax +" },
-  { pattern: /first quarter/i, className: "moon-first-quarter", symbol: "Half +" },
-  { pattern: /waxing gibbous/i, className: "moon-waxing-gibbous", symbol: "Glow +" },
-  { pattern: /full/i, className: "moon-full", symbol: "Full" },
-  { pattern: /waning gibbous/i, className: "moon-waning-gibbous", symbol: "Glow -" },
-  { pattern: /last quarter|third quarter/i, className: "moon-last-quarter", symbol: "Half -" },
-  { pattern: /waning crescent/i, className: "moon-waning-crescent", symbol: "Wax -" },
+  { pattern: /^new\b/i, phaseKey: "new" },
+  { pattern: /waxing crescent/i, phaseKey: "waxing-crescent" },
+  { pattern: /first quarter/i, phaseKey: "first-quarter" },
+  { pattern: /waxing gibbous/i, phaseKey: "waxing-gibbous" },
+  { pattern: /^full\b/i, phaseKey: "full" },
+  { pattern: /waning gibbous/i, phaseKey: "waning-gibbous" },
+  { pattern: /last quarter|third quarter/i, phaseKey: "last-quarter" },
+  { pattern: /waning crescent/i, phaseKey: "waning-crescent" },
 ];
 
 function renderState(target, message, isError = false) {
@@ -52,7 +52,28 @@ function renderState(target, message, isError = false) {
 
 function getMoonPhaseDisplay(phase) {
   const match = MOON_PHASE_STYLES.find((item) => item.pattern.test(phase));
-  return match ?? { className: "moon-generic", symbol: "Moon" };
+  return match ?? { phaseKey: "generic" };
+}
+
+function renderMoonSvg(phaseKey) {
+  const moonBase = '<circle cx="32" cy="32" r="24" fill="#f5e6b5" />';
+  const shadowBase = '<circle cx="32" cy="32" r="24" fill="#1a2430" />';
+  const clipDef =
+    '<defs><clipPath id="moonClip"><circle cx="32" cy="32" r="24" /></clipPath></defs>';
+
+  const svgByPhase = {
+    new: `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${shadowBase}</svg>`,
+    full: `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}</svg>`,
+    "first-quarter": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<rect x="8" y="8" width="24" height="48" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
+    "last-quarter": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<rect x="32" y="8" width="24" height="48" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
+    "waxing-crescent": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${shadowBase}${clipDef}<circle cx="42" cy="32" r="22" clip-path="url(#moonClip)" fill="#f5e6b5" /></svg>`,
+    "waning-crescent": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${shadowBase}${clipDef}<circle cx="22" cy="32" r="22" clip-path="url(#moonClip)" fill="#f5e6b5" /></svg>`,
+    "waxing-gibbous": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<circle cx="18" cy="32" r="22" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
+    "waning-gibbous": `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}${clipDef}<circle cx="46" cy="32" r="22" clip-path="url(#moonClip)" fill="#1a2430" /></svg>`,
+    generic: `<svg viewBox="0 0 64 64" class="moon-svg" xmlns="http://www.w3.org/2000/svg">${moonBase}</svg>`,
+  };
+
+  return svgByPhase[phaseKey] ?? svgByPhase.generic;
 }
 
 function getSolunarHighlightMap(days) {
@@ -232,7 +253,7 @@ function renderUsgs(usgs) {
 function renderMoonPhase(phase) {
   const moon = getMoonPhaseDisplay(phase);
   return `<div class="moon-phase">
-    <span class="moon-badge ${moon.className}" aria-hidden="true">${escapeHtml(moon.symbol)}</span>
+    <span class="moon-icon" aria-hidden="true">${renderMoonSvg(moon.phaseKey)}</span>
     <div>
       <p class="section-label">Moon phase</p>
       <p class="moon-phase-name">${escapeHtml(phase)}</p>
@@ -310,7 +331,9 @@ function renderSolunar(days) {
       return `<article class="solunar-day-card ${highlight.className}">
         <div class="solunar-day-top">
           <h4>${escapeHtml(formatDateLabel(day.date))}</h4>
-          <span class="moon-badge ${moon.className}" aria-hidden="true">${escapeHtml(moon.symbol)}</span>
+          <span class="moon-icon moon-icon-small" aria-hidden="true">${renderMoonSvg(
+            moon.phaseKey
+          )}</span>
         </div>
         ${
           highlight.label
