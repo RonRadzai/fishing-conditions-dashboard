@@ -1,64 +1,41 @@
-const AEP_SCRAPE_URL = "https://aep-q.aep.com/recreation/hydro/";
-const AEP_REFERENCE_URL = "https://www.aep.com/recreation/hydro/whitethornelaunch/";
+const AEP_DATA_URL = new URL("../data/aep-whitethorne.json", import.meta.url);
+const STALE_AFTER_HOURS = 6;
 
 function asNumber(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function stripTags(input) {
-  return input.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
-}
-
-function parseProjectRow(html, projectName) {
-  const rowRegex = /<tr>([\s\S]*?)<\/tr>/gi;
-  let match;
-  while ((match = rowRegex.exec(html)) !== null) {
-    const row = match[1];
-    if (!new RegExp(`>${projectName}<`, "i").test(row)) {
-      continue;
-    }
-
-    const cells = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) => stripTags(m[1]));
-    if (cells.length < 5) {
-      return null;
-    }
-
-    return {
-      project: cells[0],
-      gageHeightFt: asNumber(cells[3]),
-      flowCfs: asNumber(cells[4]),
-    };
-  }
-
-  return null;
-}
-
-export async function getAepCurrent(projectName = "Claytor") {
-  const response = await fetch(AEP_SCRAPE_URL);
+export async function getAepCurrent() {
+  const response = await fetch(`${AEP_DATA_URL}?v=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) {
-    throw new Error("AEP hydro page request failed.");
+    throw new Error("AEP Whitethorne data file is unavailable.");
   }
 
-  const html = await response.text();
-  const newRiverStart = html.indexOf("New River Flows &amp; Forecasts");
-  if (newRiverStart < 0) {
-    throw new Error("Could not find New River section on AEP page.");
+  const data = await response.json();
+  if (!data || data.location !== "WhitethorneLaunch") {
+    throw new Error("AEP Whitethorne data file is invalid.");
   }
 
-  const section = html.slice(newRiverStart, newRiverStart + 20000);
-  const project = parseProjectRow(section, projectName);
-  if (!project) {
-    throw new Error(`Could not find ${projectName} row in AEP table.`);
+  const currentFlowCfs = asNumber(data.currentFlowCfs);
+  if (currentFlowCfs === null) {
+    throw new Error("AEP Whitethorne data file is missing current flow.");
   }
 
-  const updatedMatch = section.match(/Data last updated on <span>(.*?)<\/span>/i);
+  const generatedAtMs = Date.parse(data.generatedAt);
+  const stale = Number.isFinite(generatedAtMs)
+    ? Date.now() - generatedAtMs > STALE_AFTER_HOURS * 60 * 60 * 1000
+    : false;
 
   return {
-    sourceUrl: AEP_REFERENCE_URL,
-    project: project.project,
-    flowCfs: project.flowCfs,
-    gageHeightFt: project.gageHeightFt,
-    updated: updatedMatch ? stripTags(updatedMatch[1]) : null,
+    sourceUrl: data.sourceUrl,
+    generatedAt: data.generatedAt,
+    lastUpdated: data.lastUpdated,
+    currentDateTime: data.currentDateTime,
+    waterReleasedHoursOffset: asNumber(data.waterReleasedHoursOffset),
+    currentFlowCfs,
+    forecastPoints: Array.isArray(data.forecastPoints) ? data.forecastPoints : [],
+    forecastCheckpoints: Array.isArray(data.forecastCheckpoints) ? data.forecastCheckpoints : [],
+    stale,
   };
 }

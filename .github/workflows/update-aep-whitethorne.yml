@@ -1,0 +1,34 @@
+name: Update AEP Whitethorne Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  update-aep-whitethorne:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Refresh AEP Whitethorne data
+        run: python scripts/update_aep_whitethorne.py
+
+      - name: Commit updated data artifact
+        run: |
+          if git diff --quiet -- src/data/aep-whitethorne.json; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/aep-whitethorne.json
+          git commit -m "Update AEP Whitethorne data"
+          git push

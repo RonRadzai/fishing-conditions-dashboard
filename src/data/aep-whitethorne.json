@@ -1,0 +1,427 @@
+{
+  "location": "WhitethorneLaunch",
+  "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
+  "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
+  "generatedAt": "2026-03-10T20:15:40Z",
+  "lastUpdated": "2026-03-10T16:00:00",
+  "currentDateTime": 1773173532836,
+  "waterReleasedHoursOffset": 8,
+  "currentFlowCfs": 3544,
+  "forecastCheckpoints": [
+    {
+      "label": "Now",
+      "timestamp": 1773173532836,
+      "flowCfs": 3544
+    },
+    {
+      "label": "+1h",
+      "timestamp": 1773177300000,
+      "flowCfs": 3908
+    },
+    {
+      "label": "+2h",
+      "timestamp": 1773180900000,
+      "flowCfs": 3924
+    },
+    {
+      "label": "+4h",
+      "timestamp": 1773188100000,
+      "flowCfs": 3923
+    },
+    {
+      "label": "+8h",
+      "timestamp": 1773201600000,
+      "flowCfs": 1965
+    }
+  ],
+  "forecastPoints": [
+    {
+      "timestamp": 1773115200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1773116100000,
+      "flowCfs": 1928
+    },
+    {
+      "timestamp": 1773117000000,
+      "flowCfs": 1918
+    },
+    {
+      "timestamp": 1773117900000,
+      "flowCfs": 1962
+    },
+    {
+      "timestamp": 1773118800000,
+      "flowCfs": 3772
+    },
+    {
+      "timestamp": 1773119700000,
+      "flowCfs": 3907
+    },
+    {
+      "timestamp": 1773120600000,
+      "flowCfs": 3962
+    },
+    {
+      "timestamp": 1773121500000,
+      "flowCfs": 3810
+    },
+    {
+      "timestamp": 1773122400000,
+      "flowCfs": 3764
+    },
+    {
+      "timestamp": 1773123300000,
+      "flowCfs": 3804
+    },
+    {
+      "timestamp": 1773124200000,
+      "flowCfs": 3832
+    },
+    {
+      "timestamp": 1773125100000,
+      "flowCfs": 3896
+    },
+    {
+      "timestamp": 1773126000000,
+      "flowCfs": 4139
+    },
+    {
+      "timestamp": 1773126900000,
+      "flowCfs": 3808
+    },
+    {
+      "timestamp": 1773127800000,
+      "flowCfs": 3745
+    },
+    {
+      "timestamp": 1773128700000,
+      "flowCfs": 3742
+    },
+    {
+      "timestamp": 1773129600000,
+      "flowCfs": 3760
+    },
+    {
+      "timestamp": 1773130500000,
+      "flowCfs": 3712
+    },
+    {
+      "timestamp": 1773131400000,
+      "flowCfs": 3814
+    },
+    {
+      "timestamp": 1773132300000,
+      "flowCfs": 3893
+    },
+    {
+      "timestamp": 1773133200000,
+      "flowCfs": 3856
+    },
+    {
+      "timestamp": 1773134100000,
+      "flowCfs": 1937
+    },
+    {
+      "timestamp": 1773135000000,
+      "flowCfs": 1916
+    },
+    {
+      "timestamp": 1773135900000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1773136800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1773137700000,
+      "flowCfs": 1928
+    },
+    {
+      "timestamp": 1773138600000,
+      "flowCfs": 1920
+    },
+    {
+      "timestamp": 1773139500000,
+      "flowCfs": 1922
+    },
+    {
+      "timestamp": 1773140400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1773141300000,
+      "flowCfs": 1928
+    },
+    {
+      "timestamp": 1773142200000,
+      "flowCfs": 1938
+    },
+    {
+      "timestamp": 1773143100000,
+      "flowCfs": 1938
+    },
+    {
+      "timestamp": 1773144000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1773144900000,
+      "flowCfs": 1835
+    },
+    {
+      "timestamp": 1773145800000,
+      "flowCfs": 2036
+    },
+    {
+      "timestamp": 1773146700000,
+      "flowCfs": 1886
+    },
+    {
+      "timestamp": 1773147600000,
+      "flowCfs": 2003
+    },
+    {
+      "timestamp": 1773148500000,
+      "flowCfs": 2052
+    },
+    {
+      "timestamp": 1773149400000,
+      "flowCfs": 1979
+    },
+    {
+      "timestamp": 1773150300000,
+      "flowCfs": 1896
+    },
+    {
+      "timestamp": 1773151200000,
+      "flowCfs": 1886
+    },
+    {
+      "timestamp": 1773152100000,
+      "flowCfs": 1912
+    },
+    {
+      "timestamp": 1773153000000,
+      "flowCfs": 1819
+    },
+    {
+      "timestamp": 1773153900000,
+      "flowCfs": 1968
+    },
+    {
+      "timestamp": 1773154800000,
+      "flowCfs": 1970
+    },
+    {
+      "timestamp": 1773155700000,
+      "flowCfs": 2042
+    },
+    {
+      "timestamp": 1773156600000,
+      "flowCfs": 1865
+    },
+    {
+      "timestamp": 1773157500000,
+      "flowCfs": 1805
+    },
+    {
+      "timestamp": 1773158400000,
+      "flowCfs": 1900
+    },
+    {
+      "timestamp": 1773159300000,
+      "flowCfs": 3833
+    },
+    {
+      "timestamp": 1773160200000,
+      "flowCfs": 1735
+    },
+    {
+      "timestamp": 1773161100000,
+      "flowCfs": 1917
+    },
+    {
+      "timestamp": 1773162000000,
+      "flowCfs": 1892
+    },
+    {
+      "timestamp": 1773162900000,
+      "flowCfs": 3892
+    },
+    {
+      "timestamp": 1773163800000,
+      "flowCfs": 1953
+    },
+    {
+      "timestamp": 1773164700000,
+      "flowCfs": 1952
+    },
+    {
+      "timestamp": 1773165600000,
+      "flowCfs": 1961
+    },
+    {
+      "timestamp": 1773166500000,
+      "flowCfs": 3908
+    },
+    {
+      "timestamp": 1773167400000,
+      "flowCfs": 1824
+    },
+    {
+      "timestamp": 1773168300000,
+      "flowCfs": 1966
+    },
+    {
+      "timestamp": 1773169200000,
+      "flowCfs": 1919
+    },
+    {
+      "timestamp": 1773170100000,
+      "flowCfs": 3837
+    },
+    {
+      "timestamp": 1773171000000,
+      "flowCfs": 1936
+    },
+    {
+      "timestamp": 1773171900000,
+      "flowCfs": 1881
+    },
+    {
+      "timestamp": 1773172800000,
+      "flowCfs": 1823
+    },
+    {
+      "timestamp": 1773173700000,
+      "flowCfs": 3936
+    },
+    {
+      "timestamp": 1773174600000,
+      "flowCfs": 1915
+    },
+    {
+      "timestamp": 1773175500000,
+      "flowCfs": 1723
+    },
+    {
+      "timestamp": 1773176400000,
+      "flowCfs": 1808
+    },
+    {
+      "timestamp": 1773177300000,
+      "flowCfs": 3908
+    },
+    {
+      "timestamp": 1773178200000,
+      "flowCfs": 1958
+    },
+    {
+      "timestamp": 1773179100000,
+      "flowCfs": 1973
+    },
+    {
+      "timestamp": 1773180000000,
+      "flowCfs": 1958
+    },
+    {
+      "timestamp": 1773180900000,
+      "flowCfs": 3924
+    },
+    {
+      "timestamp": 1773181800000,
+      "flowCfs": 1962
+    },
+    {
+      "timestamp": 1773182700000,
+      "flowCfs": 1968
+    },
+    {
+      "timestamp": 1773183600000,
+      "flowCfs": 1967
+    },
+    {
+      "timestamp": 1773184500000,
+      "flowCfs": 3904
+    },
+    {
+      "timestamp": 1773185400000,
+      "flowCfs": 1963
+    },
+    {
+      "timestamp": 1773186300000,
+      "flowCfs": 1960
+    },
+    {
+      "timestamp": 1773187200000,
+      "flowCfs": 1968
+    },
+    {
+      "timestamp": 1773188100000,
+      "flowCfs": 3923
+    },
+    {
+      "timestamp": 1773189000000,
+      "flowCfs": 1959
+    },
+    {
+      "timestamp": 1773189900000,
+      "flowCfs": 1965
+    },
+    {
+      "timestamp": 1773190800000,
+      "flowCfs": 1969
+    },
+    {
+      "timestamp": 1773191700000,
+      "flowCfs": 3920
+    },
+    {
+      "timestamp": 1773192600000,
+      "flowCfs": 1957
+    },
+    {
+      "timestamp": 1773193500000,
+      "flowCfs": 1958
+    },
+    {
+      "timestamp": 1773194400000,
+      "flowCfs": 1967
+    },
+    {
+      "timestamp": 1773195300000,
+      "flowCfs": 3930
+    },
+    {
+      "timestamp": 1773196200000,
+      "flowCfs": 1956
+    },
+    {
+      "timestamp": 1773197100000,
+      "flowCfs": 1969
+    },
+    {
+      "timestamp": 1773198000000,
+      "flowCfs": 1956
+    },
+    {
+      "timestamp": 1773198900000,
+      "flowCfs": 3899
+    },
+    {
+      "timestamp": 1773199800000,
+      "flowCfs": 1968
+    },
+    {
+      "timestamp": 1773200700000,
+      "flowCfs": 1963
+    },
+    {
+      "timestamp": 1773201600000,
+      "flowCfs": 1965
+    }
+  ]
+}

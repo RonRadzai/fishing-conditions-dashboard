@@ -3,7 +3,7 @@
 A beginner-friendly fishing dashboard that combines:
 
 - Solunar data (sun/moon + major/minor periods)
-- AEP current flow + gage height (AEP-only; shows error if AEP is unavailable)
+- AEP Whitethorne downstream flow forecast (synced into a local JSON artifact for GitHub Pages)
 - USGS Radford reference readings
 - Same-day weather (`now + next 8h`)
 
@@ -13,7 +13,8 @@ Default ZIP for v1: `24060` (editable in the app).
 
 - Solunar: `https://api.solunar.org/solunar/{lat},{lon},{yyyymmdd},{tz}`
 - ZIP lookup: `https://api.zippopotam.us/us/{zip}`
-- AEP forecast: `https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch`
+- AEP Whitethorne page: `https://www.aep.com/recreation/hydro/whitethornelaunch/`
+- AEP page-backed forecast endpoint: `https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch`
 - USGS OGC: `https://api.waterdata.usgs.gov/ogcapi/v0`
 - NWS Weather API: `https://api.weather.gov`
 
@@ -41,9 +42,9 @@ Then open `http://localhost:5500`.
 - On load, the app gets coordinates from ZIP, then fetches all cards in parallel.
 - If one API fails, only that card shows an error; the rest still render.
 - AEP card:
-  - Scrapes AEP public hydro page HTML (New River table) for Claytor current values
-  - Shows current flow (cfs) + gage height (ft)
-  - Shows error + source link if AEP request is blocked in browser
+  - Reads `src/data/aep-whitethorne.json`, which is generated from AEP Whitethorne forecast data
+  - Shows current downstream arrival flow, release lag, and forecast checkpoints
+  - The JSON artifact is refreshed by `.github/workflows/update-aep-whitethorne.yml`
 
 ## Deploy to GitHub Pages
 
@@ -67,5 +68,5 @@ Your dashboard URL will be shown by GitHub Pages after publish.
 ## Troubleshooting
 
 - If weather fails: NWS can occasionally throttle or return temporary errors.
-- If AEP values are missing for some hours: that hour had no point in the response; it displays `N/A`.
+- If AEP data looks stale: check the latest run of `Update AEP Whitethorne Data` in GitHub Actions.
 - If ZIP fails: ensure it is a valid US 5-digit ZIP.

@@ -60,27 +60,49 @@ function renderWeather(weather) {
 }
 
 function renderAep(aep) {
-  const flow = aep.flowCfs === null ? "N/A" : `${aep.flowCfs.toLocaleString()} cfs`;
-  const gage = aep.gageHeightFt === null ? "N/A" : `${aep.gageHeightFt} ft`;
-  el.aepUpdated.textContent = aep.updated
-    ? `Last update: ${aep.updated}`
-    : "Last update: unknown";
+  const flow = `${aep.currentFlowCfs.toLocaleString()} cfs`;
+  const releaseLag = aep.waterReleasedHoursOffset === null
+    ? "Unknown"
+    : `${aep.waterReleasedHoursOffset} hours`;
+  const currentAsOf = aep.currentDateTime
+    ? formatUsDateTime(new Date(aep.currentDateTime), EASTERN_TIMEZONE)
+    : null;
+  const generatedAt = aep.generatedAt
+    ? formatUsDateTime(new Date(aep.generatedAt), EASTERN_TIMEZONE)
+    : null;
+  const checkpoints = aep.forecastCheckpoints.length
+    ? `<ul class="table-list">${aep.forecastCheckpoints
+        .map((point) => {
+          const time = formatUsHour(new Date(point.timestamp), EASTERN_TIMEZONE);
+          return `<li>
+            <span class="table-time">${escapeHtml(point.label)}</span>
+            <span class="table-detail">${escapeHtml(time)}: ${escapeHtml(
+              point.flowCfs.toLocaleString()
+            )} cfs</span>
+          </li>`;
+        })
+        .join("")}</ul>`
+    : `<p class="state">Forecast checkpoints unavailable.</p>`;
+
+  el.aepUpdated.textContent = aep.lastUpdated
+    ? `AEP data updated ${formatUsDateTime(new Date(aep.lastUpdated), EASTERN_TIMEZONE)} ET`
+    : "AEP data updated time unavailable";
 
   setHtml(
     el.aepContent,
     `<div class="stat-grid">
       <div class="stat-item">
-        <p class="stat-label">Current Flow (AEP)</p>
+        <p class="stat-label">Current Flow</p>
         <p class="stat-value">${escapeHtml(flow)}</p>
       </div>
       <div class="stat-item">
-        <p class="stat-label">Gage Height (AEP)</p>
-        <p class="stat-value">${escapeHtml(gage)}</p>
+        <p class="stat-label">Release Lag</p>
+        <p class="stat-value">${escapeHtml(releaseLag)}</p>
       </div>
     </div>
-    <p class="card-meta">Project: ${escapeHtml(
-      aep.project
-    )} (New River). Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne</a></p>`
+    <p class="card-meta">Current arrival estimate${currentAsOf ? ` at ${escapeHtml(currentAsOf)} ET` : ""}.</p>
+    ${checkpoints}
+    <p class="card-meta">Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne Launch</a>${generatedAt ? ` | Synced ${escapeHtml(generatedAt)} ET` : ""}${aep.stale ? " | Data may be stale" : ""}</p>`
   );
 }
 
@@ -145,7 +167,7 @@ async function loadDashboard(zip) {
     const tz = getTzIntegerFromBrowser();
     const [weatherResult, aepResult, usgsResult, solunarResult] = await Promise.allSettled([
       getHourlyWeather(location.lat, location.lon, 8),
-      getAepCurrent("Claytor"),
+      getAepCurrent(),
       getUsgsRadfordLatest(),
       getSolunarRange(location.lat, location.lon, tz, 7),
     ]);
