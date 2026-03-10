@@ -20,12 +20,19 @@ const el = {
   zipForm: document.querySelector("#zip-form"),
   zipInput: document.querySelector("#zip-input"),
   zipMessage: document.querySelector("#zip-message"),
+  weatherMeta: document.querySelector("#weather-meta"),
   weatherUpdated: document.querySelector("#weather-updated"),
   weatherContent: document.querySelector("#weather-content"),
   aepUpdated: document.querySelector("#aep-updated"),
   aepContent: document.querySelector("#aep-content"),
   usgsContent: document.querySelector("#usgs-content"),
+  solunarMeta: document.querySelector("#solunar-meta"),
   solunarContent: document.querySelector("#solunar-content"),
+};
+
+const staticData = {
+  aep: null,
+  usgs: null,
 };
 
 const MOON_PHASE_STYLES = [
@@ -106,6 +113,12 @@ function renderDataRows(rows) {
       </div>`
     )
     .join("")}</div>`;
+}
+
+function updateLocationLabels(location, zip) {
+  el.locationSummary.textContent = `${location.city}, ${location.state}`;
+  el.weatherMeta.textContent = `${location.city} | Now + 8h`;
+  el.solunarMeta.textContent = `${location.city} (${zip}) | Today first, then the rest of the week`;
 }
 
 function renderWeather(weather) {
@@ -337,28 +350,73 @@ function renderSolunar(days) {
   );
 }
 
+async function loadStaticCards() {
+  const tasks = [];
+
+  if (!staticData.aep) {
+    tasks.push(
+      getAepCurrent()
+        .then((value) => {
+          staticData.aep = value;
+          renderAep(value);
+        })
+        .catch((error) => {
+          setHtml(
+            el.aepContent,
+            `<p class="state error">AEP error: ${escapeHtml(
+              error.message
+            )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
+          );
+        })
+    );
+  } else {
+    renderAep(staticData.aep);
+  }
+
+  if (!staticData.usgs) {
+    tasks.push(
+      getUsgsRadfordLatest()
+        .then((value) => {
+          staticData.usgs = value;
+          renderUsgs(value);
+        })
+        .catch((error) => {
+          renderState(el.usgsContent, `USGS error: ${error.message}`, true);
+        })
+    );
+  } else {
+    renderUsgs(staticData.usgs);
+  }
+
+  await Promise.all(tasks);
+}
+
 async function loadDashboard(zip) {
   el.zipInput.value = zip;
   el.zipMessage.textContent = "";
   el.zipMessage.className = "message";
 
   renderState(el.weatherContent, "Loading weather...");
-  renderState(el.aepContent, "Loading AEP flow...");
-  renderState(el.usgsContent, "Loading USGS data...");
   renderState(el.solunarContent, "Loading solunar data...");
   el.weatherUpdated.textContent = "";
-  el.aepUpdated.textContent = "";
+  if (!staticData.aep) {
+    renderState(el.aepContent, "Loading AEP flow...");
+    el.aepUpdated.textContent = "";
+  }
+  if (!staticData.usgs) {
+    renderState(el.usgsContent, "Loading USGS data...");
+  }
 
   try {
     const location = await getCoordinatesFromZip(zip);
-    el.locationSummary.textContent = `${location.city}, ${location.state} (${zip})`;
+    updateLocationLabels(location, zip);
     saveLocalZip(zip);
 
     const tz = getTzIntegerFromBrowser();
-    const [weatherResult, aepResult, usgsResult, solunarResult] = await Promise.allSettled([
+    await loadStaticCards();
+
+    const [weatherResult, solunarResult] = await Promise.allSettled([
       getHourlyWeather(location.lat, location.lon, 8),
-      getAepCurrent(),
-      getUsgsRadfordLatest(),
       getSolunarRange(location.lat, location.lon, tz, 7),
     ]);
 
@@ -368,23 +426,6 @@ async function loadDashboard(zip) {
       renderState(el.weatherContent, `Weather error: ${weatherResult.reason.message}`, true);
     }
 
-    if (aepResult.status === "fulfilled") {
-      renderAep(aepResult.value);
-    } else {
-      setHtml(
-        el.aepContent,
-        `<p class="state error">AEP error: ${escapeHtml(
-          aepResult.reason.message
-        )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
-      );
-    }
-
-    if (usgsResult.status === "fulfilled") {
-      renderUsgs(usgsResult.value);
-    } else {
-      renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
-    }
-
     if (solunarResult.status === "fulfilled") {
       renderSolunar(solunarResult.value);
     } else {
@@ -392,9 +433,9 @@ async function loadDashboard(zip) {
     }
   } catch (error) {
     el.locationSummary.textContent = "Location unavailable";
+    el.weatherMeta.textContent = "Now + 8h";
+    el.solunarMeta.textContent = "Today first, then the rest of the week";
     renderState(el.weatherContent, "Waiting for a valid ZIP.");
-    renderState(el.aepContent, "Waiting for a valid ZIP.");
-    renderState(el.usgsContent, "Waiting for a valid ZIP.");
     renderState(el.solunarContent, "Waiting for a valid ZIP.");
     el.zipMessage.textContent = error.message;
     el.zipMessage.className = "message error";
