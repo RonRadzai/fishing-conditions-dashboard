@@ -28,8 +28,84 @@ const el = {
   solunarContent: document.querySelector("#solunar-content"),
 };
 
+const MOON_PHASE_STYLES = [
+  { pattern: /new/i, className: "moon-new", symbol: "New" },
+  { pattern: /waxing crescent/i, className: "moon-waxing-crescent", symbol: "Wax +" },
+  { pattern: /first quarter/i, className: "moon-first-quarter", symbol: "Half +" },
+  { pattern: /waxing gibbous/i, className: "moon-waxing-gibbous", symbol: "Glow +" },
+  { pattern: /full/i, className: "moon-full", symbol: "Full" },
+  { pattern: /waning gibbous/i, className: "moon-waning-gibbous", symbol: "Glow -" },
+  { pattern: /last quarter|third quarter/i, className: "moon-last-quarter", symbol: "Half -" },
+  { pattern: /waning crescent/i, className: "moon-waning-crescent", symbol: "Wax -" },
+];
+
 function renderState(target, message, isError = false) {
   setHtml(target, `<p class="state ${isError ? "error" : ""}">${escapeHtml(message)}</p>`);
+}
+
+function getMoonPhaseDisplay(phase) {
+  const match = MOON_PHASE_STYLES.find((item) => item.pattern.test(phase));
+  return match ?? { className: "moon-generic", symbol: "Moon" };
+}
+
+function getSolunarHighlightMap(days) {
+  const highlightMap = new Map(days.map((day, index) => [index, "normal"]));
+  const anchorIndexes = days
+    .map((day, index) => ({ phase: day.moonPhase, index }))
+    .filter(({ phase }) => /^(full|new)\b/i.test(String(phase).trim()))
+    .map(({ index }) => index);
+
+  anchorIndexes.forEach((anchorIndex) => {
+    for (let offset = -2; offset <= 2; offset += 1) {
+      const targetIndex = anchorIndex + offset;
+      if (targetIndex < 0 || targetIndex >= days.length) {
+        continue;
+      }
+      const current = highlightMap.get(targetIndex);
+      if (offset === 0) {
+        highlightMap.set(targetIndex, "peak");
+      } else if (current !== "peak") {
+        highlightMap.set(targetIndex, "window");
+      }
+    }
+  });
+
+  return highlightMap;
+}
+
+function getSolunarHighlightMeta(level) {
+  if (level === "peak") {
+    return {
+      className: "solunar-highlight-peak",
+      label: "Peak day",
+      description: "Full or New Moon",
+    };
+  }
+  if (level === "window") {
+    return {
+      className: "solunar-highlight-window",
+      label: "Prime window",
+      description: "Within 2 days of Full or New Moon",
+    };
+  }
+  return {
+    className: "",
+    label: "",
+    description: "",
+  };
+}
+
+function renderDataRows(rows) {
+  return `<div class="data-rows">${rows
+    .map(
+      (row) => `<div class="data-row">
+        <p class="data-label">${escapeHtml(row.label)}</p>
+        <p class="data-value ${row.emphasis ? `data-value-${row.emphasis}` : ""}">${escapeHtml(
+          row.value
+        )}</p>
+      </div>`
+    )
+    .join("")}</div>`;
 }
 
 function renderWeather(weather) {
@@ -42,13 +118,18 @@ function renderWeather(weather) {
     .map((p) => {
       const time = formatUsHour(new Date(p.startTime), EASTERN_TIMEZONE);
       const rain = p.rainChance === null || p.rainChance === undefined ? "N/A" : `${p.rainChance}%`;
-      return `<li>
-        <span class="table-time">${escapeHtml(time)}</span>
-        <span class="table-detail">${escapeHtml(String(p.temperature))}${escapeHtml(
-          p.temperatureUnit
-        )}, rain ${escapeHtml(rain)}, wind ${escapeHtml(p.windSpeed)} ${escapeHtml(
-          p.windDirection
-        )}</span>
+      return `<li class="table-row-rich">
+        <div class="table-time-block">
+          <span class="table-time">${escapeHtml(time)}</span>
+        </div>
+        <div class="table-detail-block">
+          <p class="table-main-value">${escapeHtml(String(p.temperature))}${escapeHtml(
+            p.temperatureUnit
+          )}</p>
+          <p class="table-subdetail">Rain ${escapeHtml(rain)} | Wind ${escapeHtml(
+            p.windSpeed
+          )} ${escapeHtml(p.windDirection)}</p>
+        </div>
       </li>`;
     })
     .join("");
@@ -56,7 +137,7 @@ function renderWeather(weather) {
   el.weatherUpdated.textContent = weather.updated
     ? `Updated ${formatUsDateTime(new Date(weather.updated), EASTERN_TIMEZONE)} ET`
     : "";
-  setHtml(el.weatherContent, `<ul class="table-list">${rows}</ul>`);
+  setHtml(el.weatherContent, `<ul class="table-list table-list-rich">${rows}</ul>`);
 }
 
 function renderAep(aep) {
@@ -90,7 +171,7 @@ function renderAep(aep) {
 
   setHtml(
     el.aepContent,
-    `<div class="stat-grid">
+    `<div class="stat-grid stat-grid-elevated">
       <div class="stat-item">
         <p class="stat-label">Current Flow</p>
         <p class="stat-value">${escapeHtml(flow)}</p>
@@ -100,8 +181,13 @@ function renderAep(aep) {
         <p class="stat-value">${escapeHtml(releaseLag)}</p>
       </div>
     </div>
-    <p class="card-meta">Current arrival estimate${currentAsOf ? ` at ${escapeHtml(currentAsOf)} ET` : ""}.</p>
-    ${checkpoints}
+    <div class="card-section">
+      <p class="section-label">Arrival outlook</p>
+      <p class="supporting-copy">Current arrival estimate${currentAsOf ? ` at ${escapeHtml(
+        currentAsOf
+      )} ET` : ""}.</p>
+      ${checkpoints}
+    </div>
     <p class="card-meta">Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne Launch</a>${generatedAt ? ` | Synced ${escapeHtml(generatedAt)} ET` : ""}${aep.stale ? " | Data may be stale" : ""}</p>`
   );
 }
@@ -116,7 +202,7 @@ function renderUsgs(usgs) {
 
   setHtml(
     el.usgsContent,
-    `<div class="stat-grid">
+    `<div class="stat-grid stat-grid-elevated">
       <div class="stat-item">
         <p class="stat-label">Flow</p>
         <p class="stat-value">${escapeHtml(flow)}</p>
@@ -130,21 +216,125 @@ function renderUsgs(usgs) {
   );
 }
 
+function renderMoonPhase(phase) {
+  const moon = getMoonPhaseDisplay(phase);
+  return `<div class="moon-phase">
+    <span class="moon-badge ${moon.className}" aria-hidden="true">${escapeHtml(moon.symbol)}</span>
+    <div>
+      <p class="section-label">Moon phase</p>
+      <p class="moon-phase-name">${escapeHtml(phase)}</p>
+    </div>
+  </div>`;
+}
+
+function renderSolunarTimingCard(title, timings, emphasis) {
+  return `<section class="solunar-timing ${emphasis ? `solunar-timing-${emphasis}` : ""}">
+    <p class="section-label">${escapeHtml(title)}</p>
+    ${renderDataRows(timings)}
+  </section>`;
+}
+
 function renderSolunar(days) {
-  const cards = days
-    .map(
-      (d) => `<article class="solunar-day">
-        <h3>${escapeHtml(formatDateLabel(d.date))}</h3>
-        <p>Sunrise: ${escapeHtml(d.sunrise)} | Sunset: ${escapeHtml(d.sunset)}</p>
-        <p>Moonrise: ${escapeHtml(d.moonrise)} | Moonset: ${escapeHtml(d.moonset)}</p>
-        <p>Moon phase: ${escapeHtml(d.moonPhase)}</p>
-        <p>Major: ${escapeHtml(d.major1)}, ${escapeHtml(d.major2)}</p>
-        <p>Minor: ${escapeHtml(d.minor1)}, ${escapeHtml(d.minor2)}</p>
-      </article>`
-    )
+  if (!days.length) {
+    renderState(el.solunarContent, "No solunar days were returned.");
+    return;
+  }
+
+  const highlightMap = getSolunarHighlightMap(days);
+  const [today, ...rest] = days;
+  const todayHighlight = getSolunarHighlightMeta(highlightMap.get(0));
+
+  const todayHtml = `<section class="solunar-today ${todayHighlight.className}">
+    <div class="solunar-today-header">
+      <div>
+        <p class="section-kicker">Best first read</p>
+        <h3>${escapeHtml(formatDateLabel(today.date))}</h3>
+        ${
+          todayHighlight.label
+            ? `<div class="solunar-highlight-pill ${todayHighlight.className}">
+                <span>${escapeHtml(todayHighlight.label)}</span>
+                <span>${escapeHtml(todayHighlight.description)}</span>
+              </div>`
+            : ""
+        }
+      </div>
+      ${renderMoonPhase(today.moonPhase)}
+    </div>
+    <div class="solunar-today-grid">
+      ${renderSolunarTimingCard(
+        "Major periods",
+        [
+          { label: "Major 1", value: today.major1, emphasis: "major" },
+          { label: "Major 2", value: today.major2, emphasis: "major" },
+        ],
+        "major"
+      )}
+      ${renderSolunarTimingCard(
+        "Minor periods",
+        [
+          { label: "Minor 1", value: today.minor1, emphasis: "minor" },
+          { label: "Minor 2", value: today.minor2, emphasis: "minor" },
+        ],
+        "minor"
+      )}
+    </div>
+    <div class="solunar-meta-grid">
+      <div class="meta-chip">
+        <p class="section-label">Sun</p>
+        <p class="meta-chip-value">${escapeHtml(today.sunrise)} to ${escapeHtml(today.sunset)}</p>
+      </div>
+      <div class="meta-chip">
+        <p class="section-label">Moon</p>
+        <p class="meta-chip-value">${escapeHtml(today.moonrise)} to ${escapeHtml(today.moonset)}</p>
+      </div>
+    </div>
+  </section>`;
+
+  const weekHtml = rest
+    .map((day, restIndex) => {
+      const moon = getMoonPhaseDisplay(day.moonPhase);
+      const highlight = getSolunarHighlightMeta(highlightMap.get(restIndex + 1));
+      return `<article class="solunar-day-card ${highlight.className}">
+        <div class="solunar-day-top">
+          <h4>${escapeHtml(formatDateLabel(day.date))}</h4>
+          <span class="moon-badge ${moon.className}" aria-hidden="true">${escapeHtml(moon.symbol)}</span>
+        </div>
+        ${
+          highlight.label
+            ? `<div class="solunar-highlight-pill ${highlight.className}">
+                <span>${escapeHtml(highlight.label)}</span>
+                <span>${escapeHtml(highlight.description)}</span>
+              </div>`
+            : ""
+        }
+        <p class="solunar-phase-inline">${escapeHtml(day.moonPhase)}</p>
+        ${renderDataRows([
+          { label: "Major 1", value: day.major1, emphasis: "major" },
+          { label: "Major 2", value: day.major2, emphasis: "major" },
+          { label: "Minor 1", value: day.minor1, emphasis: "minor" },
+          { label: "Minor 2", value: day.minor2, emphasis: "minor" },
+        ])}
+        <div class="solunar-day-meta">
+          <p>Sun ${escapeHtml(day.sunrise)} to ${escapeHtml(day.sunset)}</p>
+          <p>Moon ${escapeHtml(day.moonrise)} to ${escapeHtml(day.moonset)}</p>
+        </div>
+      </article>`;
+    })
     .join("");
 
-  setHtml(el.solunarContent, `<div class="solunar-grid">${cards}</div>`);
+  setHtml(
+    el.solunarContent,
+    `<div class="solunar-layout">
+      ${todayHtml}
+      <section class="solunar-week">
+        <div class="solunar-week-header">
+          <p class="section-label">Coming up</p>
+          <p class="supporting-copy">The next 6 days, kept compact for quick scanning.</p>
+        </div>
+        <div class="solunar-week-grid">${weekHtml}</div>
+      </section>
+    </div>`
+  );
 }
 
 async function loadDashboard(zip) {
