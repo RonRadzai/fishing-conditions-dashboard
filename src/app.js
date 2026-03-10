@@ -7,6 +7,7 @@ import {
   EASTERN_TIMEZONE,
   escapeHtml,
   formatDateLabel,
+  formatUsDateTime,
   formatUsHour,
   getLocalZip,
   getTzIntegerFromBrowser,
