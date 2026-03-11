@@ -26,6 +26,41 @@
         <p id="location-summary" class="subtitle">Loading location...</p>
       </header>
 
+      <section class="summary-block" aria-label="At-a-glance dashboard">
+        <div class="summary-block-header">
+          <div>
+            <p class="section-kicker">At a glance</p>
+            <h2>Whitethorne First Read</h2>
+          </div>
+          <p id="summary-meta" class="card-meta">All times Eastern</p>
+        </div>
+
+        <div class="summary-grid">
+          <article class="card summary-card" id="summary-aep-card">
+            <div class="card-title-row">
+              <div>
+                <p class="section-kicker">Fishing core</p>
+                <h3>Whitethorne Now</h3>
+              </div>
+              <p class="card-meta">AEP downstream arrival flow</p>
+            </div>
+            <p id="summary-aep-updated" class="card-meta"></p>
+            <div id="summary-aep-content" class="content-block"></div>
+          </article>
+
+          <article class="card summary-card" id="summary-solunar-card">
+            <div class="card-title-row">
+              <div>
+                <p class="section-kicker">Fishing core</p>
+                <h3>Today's Solunar</h3>
+              </div>
+              <p id="summary-solunar-meta" class="card-meta">Today only</p>
+            </div>
+            <div id="summary-solunar-content" class="content-block"></div>
+          </article>
+        </div>
+      </section>
+
       <section class="card settings-card">
         <h2>Location</h2>
         <p class="help-text">Default ZIP is <strong>24060</strong>. You can change it any time.</p>
@@ -42,10 +77,10 @@
       <section class="card solunar-section" id="solunar-card">
         <div class="card-title-row">
           <div>
-            <p class="section-kicker">Primary Read</p>
+            <p class="section-kicker">Detailed View</p>
             <h2>Solunar Outlook</h2>
           </div>
-          <p id="solunar-meta" class="card-meta">Today first, then the rest of the week</p>
+          <p id="solunar-meta" class="card-meta">Today open, next 6 days expandable | ET</p>
         </div>
         <div id="solunar-content" class="content-block"></div>
       </section>

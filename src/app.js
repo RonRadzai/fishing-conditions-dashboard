@@ -10,13 +10,19 @@ import {
   formatUsDateTime,
   formatUsHour,
   getLocalZip,
-  getTzIntegerFromBrowser,
   saveLocalZip,
   setHtml,
 } from "./utils.js";
 
+const STATIC_TTL_MS = 10 * 60 * 1000;
+
 const el = {
   locationSummary: document.querySelector("#location-summary"),
+  summaryMeta: document.querySelector("#summary-meta"),
+  summaryAepUpdated: document.querySelector("#summary-aep-updated"),
+  summaryAepContent: document.querySelector("#summary-aep-content"),
+  summarySolunarMeta: document.querySelector("#summary-solunar-meta"),
+  summarySolunarContent: document.querySelector("#summary-solunar-content"),
   zipForm: document.querySelector("#zip-form"),
   zipInput: document.querySelector("#zip-input"),
   zipMessage: document.querySelector("#zip-message"),
@@ -30,7 +36,23 @@ const el = {
   solunarContent: document.querySelector("#solunar-content"),
 };
 
-const staticData = {
+const cache = {
+  aep: {
+    value: null,
+    fetchedAt: 0,
+    promise: null,
+  },
+  usgs: {
+    value: null,
+    fetchedAt: 0,
+    promise: null,
+  },
+};
+
+const state = {
+  activeLoadId: 0,
+  expandedFutureIndex: null,
+  solunar: null,
   aep: null,
   usgs: null,
 };
@@ -62,14 +84,18 @@ function renderState(target, message, isError = false) {
   setHtml(target, `<p class="state ${isError ? "error" : ""}">${escapeHtml(message)}</p>`);
 }
 
+function isActiveRequest(loadId) {
+  return state.activeLoadId === loadId;
+}
+
 function getMoonPhaseDisplay(phase) {
-  const match = MOON_PHASE_STYLES.find((item) => item.pattern.test(phase));
+  const match = MOON_PHASE_STYLES.find((item) => item.pattern.test(String(phase)));
   return match ?? { phaseKey: "generic" };
 }
 
-function renderMoonIcon(phaseKey, phaseText, small = false) {
+function renderMoonIcon(phaseKey) {
   const src = MOON_ICON_PATHS[phaseKey] ?? MOON_ICON_PATHS.generic;
-  return `<span class="moon-icon ${small ? "moon-icon-small" : ""}" aria-hidden="true">
+  return `<span class="moon-icon" aria-hidden="true">
     <img class="moon-svg" src="${src}" alt="" loading="lazy" decoding="async" />
   </span>`;
 }
@@ -134,10 +160,22 @@ function renderDataRows(rows) {
     .join("")}</div>`;
 }
 
+function renderHighlightPill(meta) {
+  if (!meta.label) {
+    return "";
+  }
+
+  return `<div class="solunar-highlight-pill ${meta.className}">
+    <span>${escapeHtml(meta.label)}</span>
+    <span>${escapeHtml(meta.description)}</span>
+  </div>`;
+}
+
 function updateLocationLabels(location, zip) {
-  el.locationSummary.textContent = `${location.city}, ${location.state}`;
-  el.weatherMeta.textContent = `${location.city} | Now + 8h`;
-  el.solunarMeta.textContent = `${location.city} (${zip}) | Today first, then the rest of the week`;
+  el.locationSummary.textContent = `${location.city}, ${location.state} | All times Eastern`;
+  el.summaryMeta.textContent = `${location.city} (${zip}) | All times Eastern`;
+  el.weatherMeta.textContent = `${location.city} | Now + 8h ET`;
+  el.solunarMeta.textContent = `${location.city} (${zip}) | Today open, next 6 days expandable | ET`;
 }
 
 function renderWeather(weather) {
@@ -147,20 +185,23 @@ function renderWeather(weather) {
   }
 
   const rows = weather.periods
-    .map((p) => {
-      const time = formatUsHour(new Date(p.startTime), EASTERN_TIMEZONE);
-      const rain = p.rainChance === null || p.rainChance === undefined ? "N/A" : `${p.rainChance}%`;
+    .map((period) => {
+      const time = formatUsHour(new Date(period.startTime), EASTERN_TIMEZONE);
+      const rain = period.rainChance === null || period.rainChance === undefined
+        ? "N/A"
+        : `${period.rainChance}%`;
+
       return `<li class="table-row-rich">
         <div class="table-time-block">
           <span class="table-time">${escapeHtml(time)}</span>
         </div>
         <div class="table-detail-block">
-          <p class="table-main-value">${escapeHtml(String(p.temperature))}${escapeHtml(
-            p.temperatureUnit
+          <p class="table-main-value">${escapeHtml(String(period.temperature))}${escapeHtml(
+            period.temperatureUnit
           )}</p>
           <p class="table-subdetail">Rain ${escapeHtml(rain)} | Wind ${escapeHtml(
-            p.windSpeed
-          )} ${escapeHtml(p.windDirection)}</p>
+            period.windSpeed
+          )} ${escapeHtml(period.windDirection)}</p>
         </div>
       </li>`;
     })
@@ -170,6 +211,47 @@ function renderWeather(weather) {
     ? `Updated ${formatUsDateTime(new Date(weather.updated), EASTERN_TIMEZONE)} ET`
     : "";
   setHtml(el.weatherContent, `<ul class="table-list table-list-rich">${rows}</ul>`);
+}
+
+function renderSummaryAep(aep) {
+  const currentAsOf = aep.currentDateTime
+    ? formatUsDateTime(new Date(aep.currentDateTime), EASTERN_TIMEZONE)
+    : null;
+  const generatedAt = aep.generatedAt
+    ? formatUsDateTime(new Date(aep.generatedAt), EASTERN_TIMEZONE)
+    : null;
+  const freshnessLabel = aep.stale ? "Possibly stale" : "Fresh data";
+
+  el.summaryAepUpdated.textContent = currentAsOf
+    ? `Current as of ${currentAsOf} ET`
+    : "Current arrival time unavailable";
+
+  setHtml(
+    el.summaryAepContent,
+    `<div class="summary-stat-grid">
+      <div class="summary-stat">
+        <p class="stat-label">Current Flow</p>
+        <p class="stat-value">${escapeHtml(aep.currentFlowCfs.toLocaleString())} cfs</p>
+      </div>
+      <div class="summary-stat">
+        <p class="stat-label">Release Lag</p>
+        <p class="stat-value">${escapeHtml(
+          aep.waterReleasedHoursOffset === null ? "Unknown" : `${aep.waterReleasedHoursOffset} hours`
+        )}</p>
+      </div>
+    </div>
+    <div class="summary-footer-row">
+      <p class="summary-status ${aep.stale ? "is-stale" : "is-fresh"}">${escapeHtml(
+        freshnessLabel
+      )}</p>
+      <p class="summary-caption">${generatedAt ? `Synced ${escapeHtml(generatedAt)} ET` : "Sync time unavailable"}</p>
+    </div>`
+  );
+}
+
+function renderSummaryAepError(message) {
+  el.summaryAepUpdated.textContent = "Whitethorne feed unavailable";
+  renderState(el.summaryAepContent, message, true);
 }
 
 function renderAep(aep) {
@@ -231,6 +313,9 @@ function renderUsgs(usgs) {
   const level = usgs.gaugeHeight?.value !== null && usgs.gaugeHeight?.value !== undefined
     ? `${usgs.gaugeHeight.value} ft`
     : "N/A";
+  const latest = usgs.flow?.dateTime || usgs.gaugeHeight?.dateTime
+    ? formatUsDateTime(new Date(usgs.flow?.dateTime || usgs.gaugeHeight?.dateTime), EASTERN_TIMEZONE)
+    : null;
 
   setHtml(
     el.usgsContent,
@@ -244,19 +329,65 @@ function renderUsgs(usgs) {
         <p class="stat-value">${escapeHtml(level)}</p>
       </div>
     </div>
-    <p class="card-meta">Reference station: USGS 03171000 (Radford, VA)</p>`
+    <p class="card-meta">Reference station: USGS 03171000 (Radford, VA)${latest ? ` | Latest ${escapeHtml(latest)} ET` : ""}</p>`
   );
 }
 
-function renderMoonPhase(phase) {
-  const moon = getMoonPhaseDisplay(phase);
-  return `<div class="moon-phase">
-    ${renderMoonIcon(moon.phaseKey, phase)}
-    <div>
-      <p class="section-label">Moon phase</p>
-      <p class="moon-phase-name">${escapeHtml(phase)}</p>
+function getTodaySolunar(solunar) {
+  if (!solunar) {
+    return null;
+  }
+  return solunar.days.find((day) => day.dateYmd === solunar.startDate) ?? null;
+}
+
+function renderSummarySolunar(solunar) {
+  const today = getTodaySolunar(solunar);
+  if (!today) {
+    el.summarySolunarMeta.textContent = "Today unavailable";
+    renderState(el.summarySolunarContent, "Today's solunar data is unavailable.", true);
+    return;
+  }
+
+  const todayIndex = solunar.days.findIndex((day) => day.dateYmd === today.dateYmd);
+  const highlight = getSolunarHighlightMeta(getSolunarHighlightMap(solunar.days).get(todayIndex));
+  const moon = getMoonPhaseDisplay(today.moonPhase);
+
+  el.summarySolunarMeta.textContent = `${formatDateLabel(today.dateYmd)} | Eastern Time`;
+
+  setHtml(
+    el.summarySolunarContent,
+    `<div class="summary-moon-head">
+      <div class="moon-badge">
+        ${renderMoonIcon(moon.phaseKey)}
+        <div class="moon-badge-copy">
+          <p class="section-label">Moon phase</p>
+          <p class="summary-moon-phase">${escapeHtml(today.moonPhase)}</p>
+        </div>
+      </div>
+      ${renderHighlightPill(highlight)}
     </div>
-  </div>`;
+    <div class="summary-period-grid">
+      <div class="summary-period-card">
+        <p class="section-label">Major 1</p>
+        <p class="summary-period-value">${escapeHtml(today.major1)}</p>
+      </div>
+      <div class="summary-period-card">
+        <p class="section-label">Major 2</p>
+        <p class="summary-period-value">${escapeHtml(today.major2)}</p>
+      </div>
+      <div class="summary-period-card">
+        <p class="section-label">Minor 1</p>
+        <p class="summary-period-value">${escapeHtml(today.minor1)}</p>
+      </div>
+      <div class="summary-period-card">
+        <p class="section-label">Minor 2</p>
+        <p class="summary-period-value">${escapeHtml(today.minor2)}</p>
+      </div>
+    </div>
+    <p class="summary-caption">Sun ${escapeHtml(today.sunrise)} to ${escapeHtml(today.sunset)} | Moon ${escapeHtml(
+      today.moonrise
+    )} to ${escapeHtml(today.moonset)}</p>`
+  );
 }
 
 function renderSolunarTimingCard(title, timings, emphasis) {
@@ -266,31 +397,25 @@ function renderSolunarTimingCard(title, timings, emphasis) {
   </section>`;
 }
 
-function renderSolunar(days) {
-  if (!days.length) {
-    renderState(el.solunarContent, "No solunar days were returned.");
-    return;
-  }
-
-  const highlightMap = getSolunarHighlightMap(days);
-  const [today, ...rest] = days;
-  const todayHighlight = getSolunarHighlightMeta(highlightMap.get(0));
-
-  const todayHtml = `<section class="solunar-today ${todayHighlight.className}">
+function renderTodaySolunarCard(today, todayHighlight) {
+  return `<section class="solunar-today ${todayHighlight.className}">
     <div class="solunar-today-header">
       <div>
-        <p class="section-kicker">Best first read</p>
-        <h3>${escapeHtml(formatDateLabel(today.date))}</h3>
-        ${
-          todayHighlight.label
-            ? `<div class="solunar-highlight-pill ${todayHighlight.className}">
-                <span>${escapeHtml(todayHighlight.label)}</span>
-                <span>${escapeHtml(todayHighlight.description)}</span>
-              </div>`
-            : ""
-        }
+        <p class="section-kicker">Detailed view</p>
+        <h3>${escapeHtml(formatDateLabel(today.dateYmd))}</h3>
+        <p class="solunar-phase-text">${escapeHtml(today.moonPhase)}</p>
       </div>
-      ${renderMoonPhase(today.moonPhase)}
+      ${renderHighlightPill(todayHighlight)}
+    </div>
+    <div class="solunar-meta-grid solunar-meta-grid-wide">
+      <div class="meta-chip">
+        <p class="section-label">Sunrise / Sunset</p>
+        <p class="meta-chip-value">${escapeHtml(today.sunrise)} to ${escapeHtml(today.sunset)}</p>
+      </div>
+      <div class="meta-chip">
+        <p class="section-label">Moonrise / Moonset</p>
+        <p class="meta-chip-value">${escapeHtml(today.moonrise)} to ${escapeHtml(today.moonset)}</p>
+      </div>
     </div>
     <div class="solunar-today-grid">
       ${renderSolunarTimingCard(
@@ -310,47 +435,74 @@ function renderSolunar(days) {
         "minor"
       )}
     </div>
-    <div class="solunar-meta-grid">
-      <div class="meta-chip">
-        <p class="section-label">Sun</p>
-        <p class="meta-chip-value">${escapeHtml(today.sunrise)} to ${escapeHtml(today.sunset)}</p>
+  </section>`;
+}
+
+function renderFutureSolunarItem(day, index, highlight) {
+  const isOpen = state.expandedFutureIndex === index;
+  const panelId = `solunar-day-panel-${index}`;
+
+  return `<article class="solunar-day-card ${highlight.className} ${isOpen ? "is-open" : ""}">
+    <button
+      type="button"
+      class="solunar-day-trigger"
+      data-solunar-toggle="${index}"
+      aria-expanded="${isOpen}"
+      aria-controls="${panelId}"
+    >
+      <div class="solunar-day-heading">
+        <h4>${escapeHtml(formatDateLabel(day.dateYmd))}</h4>
+        <p class="solunar-phase-inline">${escapeHtml(day.moonPhase)}</p>
       </div>
-      <div class="meta-chip">
-        <p class="section-label">Moon</p>
-        <p class="meta-chip-value">${escapeHtml(today.moonrise)} to ${escapeHtml(today.moonset)}</p>
+      <div class="solunar-day-trigger-meta">
+        ${highlight.label ? `<span class="solunar-trigger-pill ${highlight.className}">${escapeHtml(
+          highlight.label
+        )}</span>` : ""}
+        <span class="solunar-chevron" aria-hidden="true">${isOpen ? "−" : "+"}</span>
+      </div>
+    </button>
+    <div id="${panelId}" class="solunar-day-body" ${isOpen ? "" : "hidden"}>
+      ${renderDataRows([
+        { label: "Major 1", value: day.major1, emphasis: "major" },
+        { label: "Major 2", value: day.major2, emphasis: "major" },
+        { label: "Minor 1", value: day.minor1, emphasis: "minor" },
+        { label: "Minor 2", value: day.minor2, emphasis: "minor" },
+      ])}
+      <div class="solunar-day-meta">
+        <p>Sun ${escapeHtml(day.sunrise)} to ${escapeHtml(day.sunset)}</p>
+        <p>Moon ${escapeHtml(day.moonrise)} to ${escapeHtml(day.moonset)}</p>
       </div>
     </div>
-  </section>`;
+  </article>`;
+}
 
-  const weekHtml = rest
-    .map((day, restIndex) => {
-      const moon = getMoonPhaseDisplay(day.moonPhase);
-      const highlight = getSolunarHighlightMeta(highlightMap.get(restIndex + 1));
-      return `<article class="solunar-day-card ${highlight.className}">
-        <div class="solunar-day-top">
-          <h4>${escapeHtml(formatDateLabel(day.date))}</h4>
-          ${renderMoonIcon(moon.phaseKey, day.moonPhase, true)}
-        </div>
-        ${
-          highlight.label
-            ? `<div class="solunar-highlight-pill ${highlight.className}">
-                <span>${escapeHtml(highlight.label)}</span>
-                <span>${escapeHtml(highlight.description)}</span>
-              </div>`
-            : ""
-        }
-        <p class="solunar-phase-inline">${escapeHtml(day.moonPhase)}</p>
-        ${renderDataRows([
-          { label: "Major 1", value: day.major1, emphasis: "major" },
-          { label: "Major 2", value: day.major2, emphasis: "major" },
-          { label: "Minor 1", value: day.minor1, emphasis: "minor" },
-          { label: "Minor 2", value: day.minor2, emphasis: "minor" },
-        ])}
-        <div class="solunar-day-meta">
-          <p>Sun ${escapeHtml(day.sunrise)} to ${escapeHtml(day.sunset)}</p>
-          <p>Moon ${escapeHtml(day.moonrise)} to ${escapeHtml(day.moonset)}</p>
-        </div>
-      </article>`;
+function renderSolunar(solunar) {
+  const today = getTodaySolunar(solunar);
+  const futureDays = solunar.days.filter((day) => day.dateYmd !== solunar.startDate);
+
+  if (!today && !futureDays.length) {
+    renderState(el.solunarContent, "No solunar days were returned.", true);
+    return;
+  }
+
+  const highlightMap = getSolunarHighlightMap(solunar.days);
+  const todayIndex = solunar.days.findIndex((day) => day.dateYmd === solunar.startDate);
+  const todayHighlight = getSolunarHighlightMeta(highlightMap.get(todayIndex));
+  const missingToday = solunar.missingDates.includes(solunar.startDate);
+  const futureMissingCount = solunar.missingDates.filter((dateYmd) => dateYmd !== solunar.startDate).length;
+  const todayHtml = today
+    ? renderTodaySolunarCard(today, todayHighlight)
+    : `<section class="solunar-today">
+        <p class="section-kicker">Detailed view</p>
+        <h3>${escapeHtml(formatDateLabel(solunar.startDate))}</h3>
+        <p class="state error">Today's solunar data is unavailable.</p>
+      </section>`;
+
+  const futureHtml = futureDays
+    .map((day, futureIndex) => {
+      const currentIndex = solunar.days.findIndex((item) => item.dateYmd === day.dateYmd);
+      const highlight = getSolunarHighlightMeta(highlightMap.get(currentIndex));
+      return renderFutureSolunarItem(day, futureIndex, highlight);
     })
     .join("");
 
@@ -360,84 +512,138 @@ function renderSolunar(days) {
       ${todayHtml}
       <section class="solunar-week">
         <div class="solunar-week-header">
-          <p class="section-label">Coming up</p>
-          <p class="supporting-copy">The next 6 days, kept compact for quick scanning.</p>
+          <div>
+            <p class="section-label">Coming up</p>
+            <p class="supporting-copy">Future days stay collapsed until you need the detail.</p>
+          </div>
+          ${
+            missingToday || futureMissingCount
+              ? `<p class="solunar-note">Unavailable: ${missingToday ? "today" : ""}${missingToday && futureMissingCount ? " + " : ""}${futureMissingCount ? `${futureMissingCount} future day${futureMissingCount === 1 ? "" : "s"}` : ""}</p>`
+              : `<p class="solunar-note">All times Eastern</p>`
+          }
         </div>
-        <div class="solunar-week-grid">${weekHtml}</div>
+        <div class="solunar-accordion">${futureHtml || `<p class="state">No future days available.</p>`}</div>
       </section>
     </div>`
   );
 }
 
-async function loadStaticCards() {
-  const tasks = [];
-
-  if (!staticData.aep) {
-    tasks.push(
-      getAepCurrent()
-        .then((value) => {
-          staticData.aep = value;
-          renderAep(value);
-        })
-        .catch((error) => {
-          setHtml(
-            el.aepContent,
-            `<p class="state error">AEP error: ${escapeHtml(
-              error.message
-            )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
-          );
-        })
-    );
-  } else {
-    renderAep(staticData.aep);
+async function getCachedResource(key, loader) {
+  const entry = cache[key];
+  const now = Date.now();
+  if (entry.value && now - entry.fetchedAt < STATIC_TTL_MS) {
+    return entry.value;
   }
 
-  if (!staticData.usgs) {
-    tasks.push(
-      getUsgsRadfordLatest()
-        .then((value) => {
-          staticData.usgs = value;
-          renderUsgs(value);
-        })
-        .catch((error) => {
-          renderState(el.usgsContent, `USGS error: ${error.message}`, true);
-        })
-    );
-  } else {
-    renderUsgs(staticData.usgs);
+  if (entry.promise) {
+    return entry.promise;
   }
 
-  await Promise.all(tasks);
+  entry.promise = loader()
+    .then((value) => {
+      entry.value = value;
+      entry.fetchedAt = Date.now();
+      return value;
+    })
+    .catch((error) => {
+      if (entry.value) {
+        return entry.value;
+      }
+      throw error;
+    })
+    .finally(() => {
+      entry.promise = null;
+    });
+
+  return entry.promise;
+}
+
+function renderInitialLoadingState() {
+  renderState(el.summaryAepContent, "Loading Whitethorne flow...");
+  renderState(el.summarySolunarContent, "Loading today's solunar...");
+  renderState(el.weatherContent, "Loading weather...");
+  renderState(el.solunarContent, "Loading solunar data...");
+  renderState(el.aepContent, "Loading AEP flow...");
+  renderState(el.usgsContent, "Loading USGS data...");
+  el.summaryAepUpdated.textContent = "";
+  el.summarySolunarMeta.textContent = "Today's first read";
+  el.weatherUpdated.textContent = "";
+  el.aepUpdated.textContent = "";
+}
+
+function renderZipErrorState(message) {
+  el.locationSummary.textContent = "Location unavailable";
+  el.summaryMeta.textContent = "Waiting for a valid ZIP";
+  el.weatherMeta.textContent = "Now + 8h ET";
+  el.solunarMeta.textContent = "Today open, next 6 days expandable | ET";
+  renderState(el.summarySolunarContent, "Waiting for a valid ZIP.", true);
+  renderState(el.weatherContent, "Waiting for a valid ZIP.");
+  renderState(el.solunarContent, "Waiting for a valid ZIP.");
+  el.zipMessage.textContent = message;
+  el.zipMessage.className = "message error";
 }
 
 async function loadDashboard(zip) {
+  const loadId = ++state.activeLoadId;
+  state.expandedFutureIndex = null;
+  state.solunar = null;
   el.zipInput.value = zip;
   el.zipMessage.textContent = "";
   el.zipMessage.className = "message";
+  renderInitialLoadingState();
 
-  renderState(el.weatherContent, "Loading weather...");
-  renderState(el.solunarContent, "Loading solunar data...");
-  el.weatherUpdated.textContent = "";
-  if (!staticData.aep) {
-    renderState(el.aepContent, "Loading AEP flow...");
-    el.aepUpdated.textContent = "";
-  }
-  if (!staticData.usgs) {
-    renderState(el.usgsContent, "Loading USGS data...");
-  }
+  const staticTasks = Promise.allSettled([
+    getCachedResource("aep", getAepCurrent),
+    getCachedResource("usgs", getUsgsRadfordLatest),
+  ]);
 
   try {
     const location = await getCoordinatesFromZip(zip);
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
+
     updateLocationLabels(location, zip);
     saveLocalZip(zip);
 
-    const tz = getTzIntegerFromBrowser();
-    await loadStaticCards();
-
-    const [weatherResult, solunarResult] = await Promise.allSettled([
-      getHourlyWeather(location.lat, location.lon, 8),
-      getSolunarRange(location.lat, location.lon, tz, 7),
+    const [staticResults, weatherResult, solunarResult] = await Promise.all([
+      staticTasks,
+      getHourlyWeather(location.lat, location.lon, 8).then(
+        (value) => ({ status: "fulfilled", value }),
+        (reason) => ({ status: "rejected", reason })
+      ),
+      getSolunarRange(location.lat, location.lon, null, 7).then(
+        (value) => ({ status: "fulfilled", value }),
+        (reason) => ({ status: "rejected", reason })
+      ),
     ]);
+
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
+
+    const [aepResult, usgsResult] = staticResults;
+
+    if (aepResult.status === "fulfilled") {
+      state.aep = aepResult.value;
+      renderSummaryAep(aepResult.value);
+      renderAep(aepResult.value);
+    } else {
+      renderSummaryAepError(aepResult.reason.message);
+      setHtml(
+        el.aepContent,
+        `<p class="state error">AEP error: ${escapeHtml(
+          aepResult.reason.message
+        )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
+      );
+    }
+
+    if (usgsResult.status === "fulfilled") {
+      state.usgs = usgsResult.value;
+      renderUsgs(usgsResult.value);
+    } else {
+      renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
+    }
 
     if (weatherResult.status === "fulfilled") {
       renderWeather(weatherResult.value);
@@ -446,18 +652,37 @@ async function loadDashboard(zip) {
     }
 
     if (solunarResult.status === "fulfilled") {
+      state.solunar = solunarResult.value;
+      renderSummarySolunar(solunarResult.value);
       renderSolunar(solunarResult.value);
     } else {
+      renderState(el.summarySolunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
       renderState(el.solunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
     }
   } catch (error) {
-    el.locationSummary.textContent = "Location unavailable";
-    el.weatherMeta.textContent = "Now + 8h";
-    el.solunarMeta.textContent = "Today first, then the rest of the week";
-    renderState(el.weatherContent, "Waiting for a valid ZIP.");
-    renderState(el.solunarContent, "Waiting for a valid ZIP.");
-    el.zipMessage.textContent = error.message;
-    el.zipMessage.className = "message error";
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
+
+    const [aepResult, usgsResult] = await staticTasks;
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
+
+    if (aepResult.status === "fulfilled") {
+      state.aep = aepResult.value;
+      renderSummaryAep(aepResult.value);
+      renderAep(aepResult.value);
+    } else {
+      renderSummaryAepError(aepResult.reason.message);
+    }
+
+    if (usgsResult.status === "fulfilled") {
+      state.usgs = usgsResult.value;
+      renderUsgs(usgsResult.value);
+    }
+
+    renderZipErrorState(error.message);
   }
 }
 
@@ -469,8 +694,25 @@ function onZipSubmit(event) {
     el.zipMessage.className = "message error";
     return;
   }
+
   loadDashboard(zip);
 }
 
+function onSolunarToggle(event) {
+  const button = event.target.closest("[data-solunar-toggle]");
+  if (!button || !state.solunar) {
+    return;
+  }
+
+  const index = Number(button.dataset.solunarToggle);
+  if (!Number.isInteger(index)) {
+    return;
+  }
+
+  state.expandedFutureIndex = state.expandedFutureIndex === index ? null : index;
+  renderSolunar(state.solunar);
+}
+
 el.zipForm.addEventListener("submit", onZipSubmit);
+el.solunarContent.addEventListener("click", onSolunarToggle);
 loadDashboard(getLocalZip());

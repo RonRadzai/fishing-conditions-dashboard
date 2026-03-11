@@ -1,10 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <clipPath id="moon-clip-waning-gibbous">
-      <circle cx="32" cy="32" r="24"/>
+    <clipPath id="moon-clip-waning-gibbous-clean">
+      <circle cx="32" cy="32" r="20" />
     </clipPath>
   </defs>
-  <circle cx="32" cy="32" r="24" fill="#f4e3ae"/>
-  <circle cx="46" cy="32" r="22" clip-path="url(#moon-clip-waning-gibbous)" fill="#101722"/>
-  <circle cx="32" cy="32" r="24" fill="none" stroke="#334252" stroke-width="1.5"/>
+  <rect width="64" height="64" rx="18" fill="#0E1625" />
+  <g clip-path="url(#moon-clip-waning-gibbous-clean)">
+    <circle cx="32" cy="32" r="20" fill="#F6E7B0" />
+    <circle cx="45" cy="32" r="17.5" fill="#0F1A2A" />
+  </g>
+  <circle cx="32" cy="32" r="18.5" stroke="#FFF6D8" stroke-width="1.4" opacity=".45" />
+  <circle cx="18" cy="17" r="1.8" fill="#F7E9B2" opacity=".9" />
+  <circle cx="48" cy="15" r="1.5" fill="#D7E8FF" opacity=".75" />
 </svg>
