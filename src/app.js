@@ -1,7 +1,7 @@
 import { getSolunarRange } from "./api/solunar.js";
 import { getAepCurrent } from "./api/aep.js";
 import { getUsgsRadfordLatest } from "./api/usgs.js";
-import { getHourlyWeather } from "./api/weather.js";
+import { getCurrentObservation, getHourlyWeather } from "./api/weather.js";
 import {
   EASTERN_TIMEZONE,
   escapeHtml,
@@ -49,6 +49,7 @@ const state = {
   aep: null,
   usgs: null,
   weather: null,
+  observation: null,
 };
 
 function getMoonPhaseFraction(date) {
@@ -223,13 +224,21 @@ function getUpcomingSolunarPeriods(todayData) {
     .map((p) => ({ ...p, countdown: formatCountdown(p.startTime.getTime() - now) }));
 }
 
-function renderQuickView(aep, weather, solunar) {
+function renderQuickView(aep, weather, solunar, observation) {
   const today = solunar ? (solunar.days.find((d) => d.dateYmd === solunar.startDate) ?? null) : null;
   const phaseFraction = today ? getMoonPhaseFraction(dateFromYmd(today.dateYmd)) : null;
   const todayIndex = solunar ? solunar.days.findIndex((d) => d.dateYmd === solunar.startDate) : -1;
   const highlight = solunar && todayIndex >= 0
     ? getSolunarHighlightMeta(getSolunarHighlightMap(solunar.days).get(todayIndex))
     : { className: "", label: "", description: "" };
+
+  // Conditions line (between moon row and metrics)
+  const conditionsHtml = observation
+    ? `<div class="qv-conditions">
+        <span class="qv-cond-text">${escapeHtml(observation.textDescription || "--")}</span>
+        ${observation.barometricPressure ? `<span class="qv-cond-detail">${escapeHtml(observation.barometricPressure)} inHg</span>` : ""}
+      </div>`
+    : "";
 
   // Moon row
   const moonIcon = phaseFraction !== null ? renderMoonPhaseIcon(phaseFraction) : "";
@@ -283,15 +292,15 @@ function renderQuickView(aep, weather, solunar) {
 
   // Footer
   const sunText = today ? `☀ ${escapeHtml(today.sunrise)} – ${escapeHtml(today.sunset)}` : "☀ --";
-  const freshnessStatus = aep
-    ? `<span class="summary-status ${aep.stale ? "is-stale" : "is-fresh"}">${aep.stale ? "Stale" : "Fresh"}</span>`
+  const freshnessStatus = aep && aep.stale
+    ? `<span class="summary-status is-stale">Stale</span>`
     : "";
   const footer = `<div class="qv-footer">
     <span class="qv-sun">${sunText}</span>
     ${freshnessStatus}
   </div>`;
 
-  setHtml(el.qvContent, moonRow + metricsRow + periodsSection + footer);
+  setHtml(el.qvContent, moonRow + conditionsHtml + metricsRow + periodsSection + footer);
 }
 
 function updateLocationLabels() {
@@ -300,10 +309,33 @@ function updateLocationLabels() {
   el.solunarMeta.textContent = `7 days | ET`;
 }
 
-function renderWeather(weather) {
+function renderWeather(weather, observation = null) {
   if (!weather.periods.length) {
     renderState(el.weatherContent, "No hourly weather periods were returned.");
     return;
+  }
+
+  let obsHtml = "";
+  if (observation) {
+    const wind = observation.windSpeed != null
+      ? `${observation.windSpeed} mph ${observation.windDirection || ""}${observation.windGust ? ` · Gusts ${observation.windGust} mph` : ""}`
+      : null;
+    const details = [
+      wind,
+      observation.barometricPressure ? `${observation.barometricPressure} inHg` : null,
+      observation.visibility ? `${observation.visibility} mi visibility` : null,
+      observation.relativeHumidity != null ? `${observation.relativeHumidity}% humidity` : null,
+      observation.precipitationLastHour && parseFloat(observation.precipitationLastHour) > 0
+        ? `${observation.precipitationLastHour}" last hr` : null,
+    ].filter(Boolean);
+
+    obsHtml = `<div class="obs-block">
+      <div class="obs-main">
+        ${observation.textDescription ? `<p class="obs-description">${escapeHtml(observation.textDescription)}</p>` : ""}
+        ${observation.temperature != null ? `<p class="obs-temp">${escapeHtml(String(observation.temperature))}°F</p>` : ""}
+      </div>
+      ${details.length ? `<p class="obs-details">${details.map(escapeHtml).join(" · ")}</p>` : ""}
+    </div>`;
   }
 
   const rows = weather.periods
@@ -334,7 +366,7 @@ function renderWeather(weather) {
   el.weatherUpdated.textContent = weather.updated
     ? `Updated ${formatUsDateTime(new Date(weather.updated), EASTERN_TIMEZONE)} ET`
     : "";
-  setHtml(el.weatherContent, `<ul class="table-list table-list-rich">${rows}</ul>`);
+  setHtml(el.weatherContent, obsHtml + `<ul class="table-list table-list-rich">${rows}</ul>`);
 }
 
 function renderAep(aep) {
@@ -634,10 +666,11 @@ async function loadDashboard() {
   state.expandedFutureIndex = null;
   state.solunar = null;
   state.weather = null;
+  state.observation = null;
   renderInitialLoadingState();
   updateLocationLabels();
 
-  const [staticResults, weatherResult, solunarResult] = await Promise.all([
+  const [staticResults, weatherResult, solunarResult, observationResult] = await Promise.all([
     Promise.allSettled([
       getCachedResource("aep", getAepCurrent),
       getCachedResource("usgs", getUsgsRadfordLatest),
@@ -647,6 +680,10 @@ async function loadDashboard() {
       (reason) => ({ status: "rejected", reason })
     ),
     getSolunarRange(LOCATION.lat, LOCATION.lon, null, 7).then(
+      (value) => ({ status: "fulfilled", value }),
+      (reason) => ({ status: "rejected", reason })
+    ),
+    getCurrentObservation(LOCATION.lat, LOCATION.lon).then(
       (value) => ({ status: "fulfilled", value }),
       (reason) => ({ status: "rejected", reason })
     ),
@@ -677,9 +714,13 @@ async function loadDashboard() {
     renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
   }
 
+  if (observationResult.status === "fulfilled") {
+    state.observation = observationResult.value;
+  }
+
   if (weatherResult.status === "fulfilled") {
     state.weather = weatherResult.value;
-    renderWeather(weatherResult.value);
+    renderWeather(weatherResult.value, state.observation);
   } else {
     renderState(el.weatherContent, `Weather error: ${weatherResult.reason.message}`, true);
   }
@@ -691,10 +732,10 @@ async function loadDashboard() {
     renderState(el.solunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
   }
 
-  renderQuickView(state.aep, state.weather, state.solunar);
+  renderQuickView(state.aep, state.weather, state.solunar, state.observation);
 
   setInterval(() => {
-    if (state.solunar) renderQuickView(state.aep, state.weather, state.solunar);
+    if (state.solunar) renderQuickView(state.aep, state.weather, state.solunar, state.observation);
   }, 60000);
 }
 
