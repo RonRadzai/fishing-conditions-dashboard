@@ -85,12 +85,12 @@ function renderMoonPhaseIcon(phaseFraction) {
   let litPath;
   if (phaseFraction < 0.5) {
     const rx = (R * Math.abs(Math.cos(2 * Math.PI * phaseFraction))).toFixed(2);
-    const sweep = phaseFraction < 0.25 ? 1 : 0;
+    const sweep = phaseFraction < 0.25 ? 0 : 1;
     litPath = `M${cx},${topY} A${R},${R} 0 0 1 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
   } else {
     const wf = phaseFraction - 0.5;
     const rx = (R * Math.abs(Math.cos(2 * Math.PI * wf))).toFixed(2);
-    const sweep = wf < 0.25 ? 1 : 0;
+    const sweep = wf < 0.25 ? 0 : 1;
     litPath = `M${cx},${topY} A${R},${R} 0 0 0 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
   }
 
@@ -104,7 +104,7 @@ function renderMoonPhaseIcon(phaseFraction) {
 }
 
 function getSolunarHighlightMap(days) {
-  const highlightMap = new Map(days.map((day, index) => [index, "normal"]));
+  const highlightMap = new Map(days.map((_, index) => [index, "normal"]));
   const anchorIndexes = days
     .map((day, index) => ({ phase: day.moonPhase, index }))
     .filter(({ phase }) => /^(full|new)\b/i.test(String(phase).trim()))
