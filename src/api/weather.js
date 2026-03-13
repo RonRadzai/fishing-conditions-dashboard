@@ -49,6 +49,8 @@ export async function getHourlyWeather(lat, lon, hoursAhead = 8) {
       rainChance: p.probabilityOfPrecipitation?.value,
       windSpeed: p.windSpeed || "N/A",
       windDirection: p.windDirection || "N/A",
+      windGust: p.windGust || null,
+      shortForecast: p.shortForecast || null,
     })),
   };
 }

@@ -306,6 +306,13 @@ h2 {
   line-height: 1.35;
 }
 
+.table-forecast {
+  margin: 0.18rem 0 0;
+  color: var(--accent-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 .data-rows {
   display: grid;
   gap: 0.52rem;

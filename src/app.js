@@ -313,17 +313,19 @@ function renderWeather(weather) {
         ? "N/A"
         : `${period.rainChance}%`;
 
+      const gust = period.windGust ? ` · Gusts ${escapeHtml(period.windGust)}` : "";
+      const forecast = period.shortForecast
+        ? `<p class="table-forecast">${escapeHtml(period.shortForecast)}</p>`
+        : "";
+
       return `<li class="table-row-rich">
         <div class="table-time-block">
           <span class="table-time">${escapeHtml(time)}</span>
         </div>
         <div class="table-detail-block">
-          <p class="table-main-value">${escapeHtml(String(period.temperature))}${escapeHtml(
-            period.temperatureUnit
-          )}</p>
-          <p class="table-subdetail">Rain ${escapeHtml(rain)} | Wind ${escapeHtml(
-            period.windSpeed
-          )} ${escapeHtml(period.windDirection)}</p>
+          <p class="table-main-value">${escapeHtml(String(period.temperature))}${escapeHtml(period.temperatureUnit)}</p>
+          <p class="table-subdetail">Rain ${escapeHtml(rain)} · Wind ${escapeHtml(period.windSpeed)} ${escapeHtml(period.windDirection)}${gust}</p>
+          ${forecast}
         </div>
       </li>`;
     })
