@@ -295,7 +295,7 @@ function renderQuickView(aep, weather, solunar) {
 }
 
 function updateLocationLabels() {
-  el.locationSummary.textContent = `${LOCATION.city}, ${LOCATION.state} | Eastern`;
+  el.locationSummary.textContent = `${LOCATION.city}, ${LOCATION.state}`;
   el.weatherMeta.textContent = `${LOCATION.city} | Now + 8h ET`;
   el.solunarMeta.textContent = `7 days | ET`;
 }
