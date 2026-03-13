@@ -53,28 +53,21 @@ const state = {
   usgs: null,
 };
 
-const MOON_PHASE_STYLES = [
-  { pattern: /^new\b/i, phaseKey: "new" },
-  { pattern: /waxing crescent/i, phaseKey: "waxing-crescent" },
-  { pattern: /first quarter/i, phaseKey: "first-quarter" },
-  { pattern: /waxing gibbous/i, phaseKey: "waxing-gibbous" },
-  { pattern: /^full\b/i, phaseKey: "full" },
-  { pattern: /waning gibbous/i, phaseKey: "waning-gibbous" },
-  { pattern: /last quarter|third quarter/i, phaseKey: "last-quarter" },
-  { pattern: /waning crescent/i, phaseKey: "waning-crescent" },
-];
+function getMoonPhaseFraction(date) {
+  const knownNewMoonMs = Date.UTC(2000, 0, 6, 18, 14, 0);
+  const synodicPeriodMs = 29.53059 * 24 * 60 * 60 * 1000;
+  const elapsed = date.getTime() - knownNewMoonMs;
+  return (((elapsed % synodicPeriodMs) + synodicPeriodMs) % synodicPeriodMs) / synodicPeriodMs;
+}
 
-const MOON_ICON_PATHS = {
-  new: new URL("./assets/moon/new.svg", import.meta.url).href,
-  full: new URL("./assets/moon/full.svg", import.meta.url).href,
-  "first-quarter": new URL("./assets/moon/first-quarter.svg", import.meta.url).href,
-  "last-quarter": new URL("./assets/moon/last-quarter.svg", import.meta.url).href,
-  "waxing-crescent": new URL("./assets/moon/waxing-crescent.svg", import.meta.url).href,
-  "waning-crescent": new URL("./assets/moon/waning-crescent.svg", import.meta.url).href,
-  "waxing-gibbous": new URL("./assets/moon/waxing-gibbous.svg", import.meta.url).href,
-  "waning-gibbous": new URL("./assets/moon/waning-gibbous.svg", import.meta.url).href,
-  generic: new URL("./assets/moon/generic.svg", import.meta.url).href,
-};
+function dateFromYmd(yyyymmdd) {
+  return new Date(Date.UTC(
+    Number(yyyymmdd.slice(0, 4)),
+    Number(yyyymmdd.slice(4, 6)) - 1,
+    Number(yyyymmdd.slice(6, 8)),
+    12, 0, 0
+  ));
+}
 
 function renderState(target, message, isError = false) {
   setHtml(target, `<p class="state ${isError ? "error" : ""}">${escapeHtml(message)}</p>`);
@@ -84,15 +77,29 @@ function isActiveRequest(loadId) {
   return state.activeLoadId === loadId;
 }
 
-function getMoonPhaseDisplay(phase) {
-  const match = MOON_PHASE_STYLES.find((item) => item.pattern.test(String(phase)));
-  return match ?? { phaseKey: "generic" };
-}
+function renderMoonPhaseIcon(phaseFraction) {
+  const cx = 20, cy = 20, R = 18;
+  const topY = cy - R;
+  const botY = cy + R;
 
-function renderMoonIcon(phaseKey) {
-  const src = MOON_ICON_PATHS[phaseKey] ?? MOON_ICON_PATHS.generic;
+  let litPath;
+  if (phaseFraction < 0.5) {
+    const rx = (R * Math.abs(Math.cos(2 * Math.PI * phaseFraction))).toFixed(2);
+    const sweep = phaseFraction < 0.25 ? 1 : 0;
+    litPath = `M${cx},${topY} A${R},${R} 0 0 1 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
+  } else {
+    const wf = phaseFraction - 0.5;
+    const rx = (R * Math.abs(Math.cos(2 * Math.PI * wf))).toFixed(2);
+    const sweep = wf < 0.25 ? 1 : 0;
+    litPath = `M${cx},${topY} A${R},${R} 0 0 0 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
+  }
+
   return `<span class="moon-icon" aria-hidden="true">
-    <img class="moon-svg" src="${src}" alt="" loading="lazy" decoding="async" />
+    <svg viewBox="0 0 40 40" class="moon-svg">
+      <circle cx="${cx}" cy="${cy}" r="${R}" fill="#0E1625"/>
+      <path d="${litPath}" fill="#F6E7B0"/>
+      <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#FFF6D8" stroke-width="0.8" opacity="0.4"/>
+    </svg>
   </span>`;
 }
 
@@ -346,7 +353,7 @@ function renderSummarySolunar(solunar) {
 
   const todayIndex = solunar.days.findIndex((day) => day.dateYmd === today.dateYmd);
   const highlight = getSolunarHighlightMeta(getSolunarHighlightMap(solunar.days).get(todayIndex));
-  const moon = getMoonPhaseDisplay(today.moonPhase);
+  const phaseFraction = getMoonPhaseFraction(dateFromYmd(today.dateYmd));
 
   el.summarySolunarMeta.textContent = `${formatDateLabel(today.dateYmd)} | Eastern Time`;
 
@@ -354,7 +361,7 @@ function renderSummarySolunar(solunar) {
     el.summarySolunarContent,
     `<div class="summary-moon-head">
       <div class="moon-badge">
-        ${renderMoonIcon(moon.phaseKey)}
+        ${renderMoonPhaseIcon(phaseFraction)}
         <div class="moon-badge-copy">
           <p class="section-label">Moon phase</p>
           <p class="summary-moon-phase">${escapeHtml(today.moonPhase)}</p>
