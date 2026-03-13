@@ -4,6 +4,7 @@ import json
 import math
 import pathlib
 import sys
+import tempfile
 import urllib.request
 from datetime import UTC, datetime
 
@@ -120,7 +121,12 @@ def build_output(payload: dict) -> dict:
 
 def write_output(data: dict) -> None:
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=OUTPUT_PATH.parent, delete=False, suffix=".tmp"
+    ) as tmp:
+        tmp.write(json.dumps(data, indent=2) + "\n")
+        tmp_path = pathlib.Path(tmp.name)
+    tmp_path.replace(OUTPUT_PATH)
 
 
 def main() -> int:

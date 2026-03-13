@@ -1,10 +1,7 @@
+import { asNumber } from "../utils.js";
+
 const AEP_DATA_URL = new URL("../data/aep-whitethorne.json", import.meta.url);
 const STALE_AFTER_HOURS = 6;
-
-function asNumber(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
 
 export async function getAepCurrent() {
   const response = await fetch(`${AEP_DATA_URL}?v=${Date.now()}`, { cache: "no-store" });

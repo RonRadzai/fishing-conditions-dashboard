@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.zippopotam.us https://api.solunar.org https://api.weather.gov https://api.waterdata.usgs.gov https://fonts.googleapis.com https://fonts.gstatic.com;"
+      content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.solunar.org https://api.weather.gov https://api.waterdata.usgs.gov https://fonts.googleapis.com https://fonts.gstatic.com;"
     />
     <title>Fishing Conditions Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -59,19 +59,6 @@
             <div id="summary-solunar-content" class="content-block"></div>
           </article>
         </div>
-      </section>
-
-      <section class="card settings-card">
-        <h2>Location</h2>
-        <p class="help-text">Default ZIP is <strong>24060</strong>. You can change it any time.</p>
-        <form id="zip-form" class="zip-form">
-          <label for="zip-input">US ZIP code</label>
-          <div class="zip-controls">
-            <input id="zip-input" name="zip" maxlength="5" pattern="[0-9]{5}" required />
-            <button type="submit">Update</button>
-          </div>
-        </form>
-        <p id="zip-message" class="message"></p>
       </section>
 
       <section class="card solunar-section" id="solunar-card">

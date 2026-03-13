@@ -1,4 +1,3 @@
-import { getCoordinatesFromZip } from "./api/zip.js";
 import { getSolunarRange } from "./api/solunar.js";
 import { getAepCurrent } from "./api/aep.js";
 import { getUsgsRadfordLatest } from "./api/usgs.js";
@@ -9,10 +8,10 @@ import {
   formatDateLabel,
   formatUsDateTime,
   formatUsHour,
-  getLocalZip,
-  saveLocalZip,
   setHtml,
 } from "./utils.js";
+
+const LOCATION = { city: "Blacksburg", state: "VA", lat: 37.2296, lon: -80.4139, zip: "24060" };
 
 const STATIC_TTL_MS = 10 * 60 * 1000;
 
@@ -23,9 +22,6 @@ const el = {
   summaryAepContent: document.querySelector("#summary-aep-content"),
   summarySolunarMeta: document.querySelector("#summary-solunar-meta"),
   summarySolunarContent: document.querySelector("#summary-solunar-content"),
-  zipForm: document.querySelector("#zip-form"),
-  zipInput: document.querySelector("#zip-input"),
-  zipMessage: document.querySelector("#zip-message"),
   weatherMeta: document.querySelector("#weather-meta"),
   weatherUpdated: document.querySelector("#weather-updated"),
   weatherContent: document.querySelector("#weather-content"),
@@ -171,11 +167,11 @@ function renderHighlightPill(meta) {
   </div>`;
 }
 
-function updateLocationLabels(location, zip) {
-  el.locationSummary.textContent = `${location.city}, ${location.state} | All times Eastern`;
-  el.summaryMeta.textContent = `${location.city} (${zip}) | All times Eastern`;
-  el.weatherMeta.textContent = `${location.city} | Now + 8h ET`;
-  el.solunarMeta.textContent = `${location.city} (${zip}) | Today open, next 6 days expandable | ET`;
+function updateLocationLabels() {
+  el.locationSummary.textContent = `${LOCATION.city}, ${LOCATION.state} | All times Eastern`;
+  el.summaryMeta.textContent = `${LOCATION.city} (${LOCATION.zip}) | All times Eastern`;
+  el.weatherMeta.textContent = `${LOCATION.city} | Now + 8h ET`;
+  el.solunarMeta.textContent = `${LOCATION.city} (${LOCATION.zip}) | Today open, next 6 days expandable | ET`;
 }
 
 function renderWeather(weather) {
@@ -571,131 +567,69 @@ function renderInitialLoadingState() {
   el.aepUpdated.textContent = "";
 }
 
-function renderZipErrorState(message) {
-  el.locationSummary.textContent = "Location unavailable";
-  el.summaryMeta.textContent = "Waiting for a valid ZIP";
-  el.weatherMeta.textContent = "Now + 8h ET";
-  el.solunarMeta.textContent = "Today open, next 6 days expandable | ET";
-  renderState(el.summarySolunarContent, "Waiting for a valid ZIP.", true);
-  renderState(el.weatherContent, "Waiting for a valid ZIP.");
-  renderState(el.solunarContent, "Waiting for a valid ZIP.");
-  el.zipMessage.textContent = message;
-  el.zipMessage.className = "message error";
-}
-
-async function loadDashboard(zip) {
+async function loadDashboard() {
   const loadId = ++state.activeLoadId;
   state.expandedFutureIndex = null;
   state.solunar = null;
-  el.zipInput.value = zip;
-  el.zipMessage.textContent = "";
-  el.zipMessage.className = "message";
   renderInitialLoadingState();
+  updateLocationLabels();
 
-  const staticTasks = Promise.allSettled([
-    getCachedResource("aep", getAepCurrent),
-    getCachedResource("usgs", getUsgsRadfordLatest),
+  const [staticResults, weatherResult, solunarResult] = await Promise.all([
+    Promise.allSettled([
+      getCachedResource("aep", getAepCurrent),
+      getCachedResource("usgs", getUsgsRadfordLatest),
+    ]),
+    getHourlyWeather(LOCATION.lat, LOCATION.lon, 8).then(
+      (value) => ({ status: "fulfilled", value }),
+      (reason) => ({ status: "rejected", reason })
+    ),
+    getSolunarRange(LOCATION.lat, LOCATION.lon, null, 7).then(
+      (value) => ({ status: "fulfilled", value }),
+      (reason) => ({ status: "rejected", reason })
+    ),
   ]);
 
-  try {
-    const location = await getCoordinatesFromZip(zip);
-    if (!isActiveRequest(loadId)) {
-      return;
-    }
-
-    updateLocationLabels(location, zip);
-    saveLocalZip(zip);
-
-    const [staticResults, weatherResult, solunarResult] = await Promise.all([
-      staticTasks,
-      getHourlyWeather(location.lat, location.lon, 8).then(
-        (value) => ({ status: "fulfilled", value }),
-        (reason) => ({ status: "rejected", reason })
-      ),
-      getSolunarRange(location.lat, location.lon, null, 7).then(
-        (value) => ({ status: "fulfilled", value }),
-        (reason) => ({ status: "rejected", reason })
-      ),
-    ]);
-
-    if (!isActiveRequest(loadId)) {
-      return;
-    }
-
-    const [aepResult, usgsResult] = staticResults;
-
-    if (aepResult.status === "fulfilled") {
-      state.aep = aepResult.value;
-      renderSummaryAep(aepResult.value);
-      renderAep(aepResult.value);
-    } else {
-      renderSummaryAepError(aepResult.reason.message);
-      setHtml(
-        el.aepContent,
-        `<p class="state error">AEP error: ${escapeHtml(
-          aepResult.reason.message
-        )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
-      );
-    }
-
-    if (usgsResult.status === "fulfilled") {
-      state.usgs = usgsResult.value;
-      renderUsgs(usgsResult.value);
-    } else {
-      renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
-    }
-
-    if (weatherResult.status === "fulfilled") {
-      renderWeather(weatherResult.value);
-    } else {
-      renderState(el.weatherContent, `Weather error: ${weatherResult.reason.message}`, true);
-    }
-
-    if (solunarResult.status === "fulfilled") {
-      state.solunar = solunarResult.value;
-      renderSummarySolunar(solunarResult.value);
-      renderSolunar(solunarResult.value);
-    } else {
-      renderState(el.summarySolunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
-      renderState(el.solunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
-    }
-  } catch (error) {
-    if (!isActiveRequest(loadId)) {
-      return;
-    }
-
-    const [aepResult, usgsResult] = await staticTasks;
-    if (!isActiveRequest(loadId)) {
-      return;
-    }
-
-    if (aepResult.status === "fulfilled") {
-      state.aep = aepResult.value;
-      renderSummaryAep(aepResult.value);
-      renderAep(aepResult.value);
-    } else {
-      renderSummaryAepError(aepResult.reason.message);
-    }
-
-    if (usgsResult.status === "fulfilled") {
-      state.usgs = usgsResult.value;
-      renderUsgs(usgsResult.value);
-    }
-
-    renderZipErrorState(error.message);
-  }
-}
-
-function onZipSubmit(event) {
-  event.preventDefault();
-  const zip = el.zipInput.value.trim();
-  if (!/^\d{5}$/.test(zip)) {
-    el.zipMessage.textContent = "Please enter a 5-digit ZIP code.";
-    el.zipMessage.className = "message error";
+  if (!isActiveRequest(loadId)) {
     return;
   }
 
-  loadDashboard(zip);
+  const [aepResult, usgsResult] = staticResults;
+
+  if (aepResult.status === "fulfilled") {
+    state.aep = aepResult.value;
+    renderSummaryAep(aepResult.value);
+    renderAep(aepResult.value);
+  } else {
+    renderSummaryAepError(aepResult.reason.message);
+    setHtml(
+      el.aepContent,
+      `<p class="state error">AEP error: ${escapeHtml(
+        aepResult.reason.message
+      )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
+    );
+  }
+
+  if (usgsResult.status === "fulfilled") {
+    state.usgs = usgsResult.value;
+    renderUsgs(usgsResult.value);
+  } else {
+    renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
+  }
+
+  if (weatherResult.status === "fulfilled") {
+    renderWeather(weatherResult.value);
+  } else {
+    renderState(el.weatherContent, `Weather error: ${weatherResult.reason.message}`, true);
+  }
+
+  if (solunarResult.status === "fulfilled") {
+    state.solunar = solunarResult.value;
+    renderSummarySolunar(solunarResult.value);
+    renderSolunar(solunarResult.value);
+  } else {
+    renderState(el.summarySolunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
+    renderState(el.solunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
+  }
 }
 
 function onSolunarToggle(event) {
@@ -713,6 +647,5 @@ function onSolunarToggle(event) {
   renderSolunar(state.solunar);
 }
 
-el.zipForm.addEventListener("submit", onZipSubmit);
 el.solunarContent.addEventListener("click", onSolunarToggle);
-loadDashboard(getLocalZip());
+loadDashboard();
