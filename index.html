@@ -7,7 +7,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.solunar.org https://api.weather.gov https://api.waterdata.usgs.gov https://fonts.googleapis.com https://fonts.gstatic.com;"
     />
-    <title>Fishing Conditions Dashboard</title>
+    <title>Whitethorne</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -21,53 +21,20 @@
     <div class="bg-orb bg-orb-right"></div>
     <main class="layout">
       <header class="hero">
-        <p class="eyebrow">Trip Prep</p>
-        <h1>Fishing Conditions Dashboard</h1>
+        <h1>Whitethorne</h1>
         <p id="location-summary" class="subtitle">Loading location...</p>
       </header>
 
-      <section class="summary-block" aria-label="At-a-glance dashboard">
-        <div class="summary-block-header">
-          <div>
-            <p class="section-kicker">At a glance</p>
-            <h2>Whitethorne First Read</h2>
-          </div>
-          <p id="summary-meta" class="card-meta">All times Eastern</p>
-        </div>
-
-        <div class="summary-grid">
-          <article class="card summary-card" id="summary-aep-card">
-            <div class="card-title-row">
-              <div>
-                <p class="section-kicker">Fishing core</p>
-                <h3>Whitethorne Now</h3>
-              </div>
-              <p class="card-meta">AEP downstream arrival flow</p>
-            </div>
-            <p id="summary-aep-updated" class="card-meta"></p>
-            <div id="summary-aep-content" class="content-block"></div>
-          </article>
-
-          <article class="card summary-card" id="summary-solunar-card">
-            <div class="card-title-row">
-              <div>
-                <p class="section-kicker">Fishing core</p>
-                <h3>Today's Solunar</h3>
-              </div>
-              <p id="summary-solunar-meta" class="card-meta">Today only</p>
-            </div>
-            <div id="summary-solunar-content" class="content-block"></div>
-          </article>
-        </div>
+      <section class="card quick-view" aria-label="Quick view">
+        <div id="qv-content" class="qv-content"></div>
       </section>
 
       <section class="card solunar-section" id="solunar-card">
         <div class="card-title-row">
           <div>
-            <p class="section-kicker">Detailed View</p>
-            <h2>Solunar Outlook</h2>
+            <h2>Solunar</h2>
           </div>
-          <p id="solunar-meta" class="card-meta">Today open, next 6 days expandable | ET</p>
+          <p id="solunar-meta" class="card-meta">7 days | ET</p>
         </div>
         <div id="solunar-content" class="content-block"></div>
       </section>
@@ -75,7 +42,7 @@
       <section class="grid">
         <article class="card" id="weather-card">
           <div class="card-title-row">
-            <h2>Weather (Today)</h2>
+            <h2>Weather</h2>
             <p id="weather-meta" class="card-meta">Now + 8h</p>
           </div>
           <p id="weather-updated" class="card-meta"></p>
@@ -84,8 +51,7 @@
 
         <article class="card" id="aep-card">
           <div class="card-title-row">
-            <h2>AEP Whitethorne Flow</h2>
-            <p class="card-meta">Downstream arrival forecast</p>
+            <h2>Flow</h2>
           </div>
           <p id="aep-updated" class="card-meta"></p>
           <div id="aep-content" class="content-block"></div>
@@ -93,8 +59,7 @@
 
         <article class="card" id="usgs-card">
           <div class="card-title-row">
-            <h2>USGS Radford</h2>
-            <p class="card-meta">Station 03171000</p>
+            <h2>Radford Gauge</h2>
           </div>
           <div id="usgs-content" class="content-block"></div>
         </article>

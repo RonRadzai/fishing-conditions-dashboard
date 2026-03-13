@@ -1,5 +1,3 @@
-export const DEFAULT_ZIP = "24060";
-export const ZIP_STORAGE_KEY = "fishing_dashboard_zip";
 export const EASTERN_TIMEZONE = "America/New_York";
 
 function getTimeZoneParts(date, timeZone) {
@@ -100,18 +98,6 @@ export function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-export function getLocalZip() {
-  const stored = localStorage.getItem(ZIP_STORAGE_KEY);
-  if (stored && /^\d{5}$/.test(stored)) {
-    return stored;
-  }
-  return DEFAULT_ZIP;
-}
-
-export function saveLocalZip(zip) {
-  localStorage.setItem(ZIP_STORAGE_KEY, zip);
 }
 
 export function asNumber(value) {

@@ -1,72 +1,33 @@
-# Fishing Conditions Dashboard
+# Whitethorne
 
-A beginner-friendly fishing dashboard that combines:
+Fishing conditions dashboard for Whitethorne Launch on the New River. Hardcoded to Blacksburg, VA (ZIP 24060).
 
-- Solunar data (sun/moon + major/minor periods)
-- AEP Whitethorne downstream flow forecast (synced into a local JSON artifact for GitHub Pages)
-- USGS Radford reference readings
-- Same-day weather (`now + next 8h`)
+Shows:
+- Quick-view: current flow, weather, upcoming solunar periods with countdowns
+- Solunar major/minor periods for today + next 6 days
+- AEP Whitethorne downstream flow forecast
+- USGS Radford gauge readings
+- Hourly weather (now + 8h)
 
-Default ZIP for v1: `24060` (editable in the app).
+## Data sources
 
-## APIs used
-
-- Solunar: `https://api.solunar.org/solunar/{lat},{lon},{yyyymmdd},{tz}`
-- ZIP lookup: `https://api.zippopotam.us/us/{zip}`
-- AEP Whitethorne page: `https://www.aep.com/recreation/hydro/whitethornelaunch/`
-- AEP page-backed forecast endpoint: `https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch`
-- USGS OGC: `https://api.waterdata.usgs.gov/ogcapi/v0`
-- NWS Weather API: `https://api.weather.gov`
+- Solunar: `api.solunar.org`
+- AEP flow: `src/data/aep-whitethorne.json` (auto-updated by GitHub Actions)
+- USGS: `api.waterdata.usgs.gov`
+- Weather: `api.weather.gov`
 
 ## Run locally
 
-This is a static site, so use any static server.
-
-### Option A: VS Code Live Server
-
-1. Install the Live Server extension.
-2. Right-click `index.html`.
-3. Click **Open with Live Server**.
-
-### Option B: Python
+Static site — any server works.
 
 ```bash
 python -m http.server 5500
 ```
 
-Then open `http://localhost:5500`.
+Or use VS Code Live Server on `index.html`.
 
-## App behavior
+## Notes
 
-- ZIP is stored in localStorage key: `fishing_dashboard_zip`.
-- On load, the app gets coordinates from ZIP, then fetches all cards in parallel.
-- If one API fails, only that card shows an error; the rest still render.
-- AEP card:
-  - Reads `src/data/aep-whitethorne.json`, which is generated from AEP Whitethorne forecast data
-  - Shows current downstream arrival flow, release lag, and forecast checkpoints
-  - The JSON artifact is refreshed by `.github/workflows/update-aep-whitethorne.yml`
-
-## Deploy to GitHub Pages
-
-1. Initialize git (if needed):
-   - `git init`
-2. Add your GitHub repo as remote:
-   - `git remote add origin https://github.com/RonRadzai/fishing-conditions-dashboard.git`
-3. Commit:
-   - `git add .`
-   - `git commit -m "Initial fishing conditions dashboard"`
-4. Push:
-   - `git branch -M main`
-   - `git push -u origin main`
-5. In GitHub:
-   - Go to **Settings > Pages**
-   - Source: **Deploy from a branch**
-   - Branch: `main`, folder: `/ (root)`
-
-Your dashboard URL will be shown by GitHub Pages after publish.
-
-## Troubleshooting
-
-- If weather fails: NWS can occasionally throttle or return temporary errors.
-- If AEP data looks stale: check the latest run of `Update AEP Whitethorne Data` in GitHub Actions.
-- If ZIP fails: ensure it is a valid US 5-digit ZIP.
+- AEP data is refreshed on a schedule by `.github/workflows/update-aep-whitethorne.yml`
+- If AEP looks stale, check the latest `Update AEP Whitethorne Data` run in GitHub Actions
+- If weather fails, NWS occasionally has temporary errors — just reload
