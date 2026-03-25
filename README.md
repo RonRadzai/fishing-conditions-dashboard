@@ -1,5 +1,7 @@
 # Whitethorne
 
+**[Open Dashboard](https://ronradzai.github.io/fishing-conditions-dashboard/)**
+
 Fishing conditions dashboard for Whitethorne Launch on the New River. Hardcoded to Blacksburg, VA (ZIP 24060).
 
 Shows:
