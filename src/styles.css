@@ -715,6 +715,15 @@ a {
 }
 .qv-sun { font-size: 0.82rem; color: var(--muted); }
 
+/* Flow forecast graph */
+.flow-graph { margin-bottom: 1rem; }
+.flow-graph .section-label { margin-bottom: 0.4rem; }
+.forecast-chart { display: block; width: 100%; height: auto; }
+.graph-axis { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--muted-soft); }
+.graph-value { font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600; fill: var(--ink); }
+.chart-area { fill: rgba(30, 121, 102, 0.08); }
+.graph-grid { stroke: #2d5a4a; stroke-width: 0.6; opacity: 0.14; }
+
 @media (min-width: 760px) {
   .solunar-today-grid {
     grid-template-columns: 1fr 1fr;

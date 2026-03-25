@@ -236,7 +236,6 @@ function renderQuickView(aep, weather, solunar, observation) {
   const conditionsHtml = observation
     ? `<div class="qv-conditions">
         <span class="qv-cond-text">${escapeHtml(observation.textDescription || "--")}</span>
-        ${observation.barometricPressure ? `<span class="qv-cond-detail">${escapeHtml(observation.barometricPressure)} inHg</span>` : ""}
       </div>`
     : "";
 
@@ -307,6 +306,75 @@ function updateLocationLabels() {
   el.locationSummary.textContent = `${LOCATION.city}, ${LOCATION.state}`;
   el.weatherMeta.textContent = `${LOCATION.city} | Now + 8h ET`;
   el.solunarMeta.textContent = `7 days | ET`;
+}
+
+function renderFlowGraph(aep) {
+  if (!aep.forecastCheckpoints || aep.forecastCheckpoints.length < 2) return "";
+
+  const now = Date.now();
+  // Dense line from forecastPoints (future only), fallback to checkpoints
+  const rawLine = aep.forecastPoints.length
+    ? aep.forecastPoints.filter((p) => p.timestamp >= now - 15 * 60 * 1000)
+    : aep.forecastCheckpoints;
+  if (rawLine.length < 2) return "";
+
+  const W = 540, H = 165;
+  const padL = 54, padR = 14, padT = 20, padB = 42;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const allFlows = rawLine.map((p) => p.flowCfs).concat(aep.forecastCheckpoints.map((p) => p.flowCfs));
+  const minF = Math.min(...allFlows);
+  const maxF = Math.max(...allFlows);
+  const fRange = maxF - minF || 100;
+
+  const minTs = rawLine[0].timestamp;
+  const maxTs = rawLine[rawLine.length - 1].timestamp;
+  const tsRange = maxTs - minTs || 1;
+
+  const xOf = (ts) => padL + ((ts - minTs) / tsRange) * plotW;
+  const yOf = (f) => padT + (1 - (f - minF) / fRange) * plotH;
+  const baseY = padT + plotH;
+
+  // Area fill + line
+  const linePts = rawLine.map((p) => `${xOf(p.timestamp).toFixed(1)},${yOf(p.flowCfs).toFixed(1)}`);
+  const areaD =
+    `M${xOf(rawLine[0].timestamp).toFixed(1)},${yOf(rawLine[0].flowCfs).toFixed(1)} ` +
+    rawLine.slice(1).map((p) => `L${xOf(p.timestamp).toFixed(1)},${yOf(p.flowCfs).toFixed(1)}`).join(" ") +
+    ` L${xOf(maxTs).toFixed(1)},${baseY} L${xOf(minTs).toFixed(1)},${baseY} Z`;
+
+  // Grid lines
+  const gridHtml =
+    `<line x1="${padL}" y1="${padT}" x2="${padL + plotW}" y2="${padT}" class="graph-grid"/>` +
+    `<line x1="${padL}" y1="${baseY}" x2="${padL + plotW}" y2="${baseY}" class="graph-grid"/>`;
+
+  // Y axis labels (max on top, min on bottom)
+  const yAxisHtml =
+    `<text x="${padL - 5}" y="${padT + 4}" text-anchor="end" class="graph-axis">${maxF.toLocaleString()}</text>` +
+    `<text x="${padL - 5}" y="${baseY}" text-anchor="end" class="graph-axis">${minF.toLocaleString()}</text>`;
+
+  // Checkpoint dots + flow value labels + time labels below axis
+  const cpHtml = aep.forecastCheckpoints.map((cp) => {
+    const cx = xOf(cp.timestamp).toFixed(1);
+    const cy = yOf(cp.flowCfs);
+    const valueLabelY = cy < padT + 16 ? (cy + 14).toFixed(1) : (cy - 7).toFixed(1);
+    return (
+      `<circle cx="${cx}" cy="${cy.toFixed(1)}" r="3.5" fill="#1e7966" stroke="#fff" stroke-width="1.5"/>` +
+      `<text x="${cx}" y="${valueLabelY}" text-anchor="middle" class="graph-value">${cp.flowCfs.toLocaleString()}</text>` +
+      `<text x="${cx}" y="${(baseY + 14).toFixed(1)}" text-anchor="middle" class="graph-axis">${escapeHtml(cp.label)}</text>`
+    );
+  }).join("");
+
+  return `<div class="flow-graph">
+  <p class="section-label">Flow Forecast</p>
+  <svg viewBox="0 0 ${W} ${H}" class="forecast-chart" role="img" aria-label="River flow forecast chart">
+    ${gridHtml}
+    <path d="${areaD}" class="chart-area"/>
+    <polyline points="${linePts.join(" ")}" fill="none" stroke="#1e7966" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${yAxisHtml}
+    ${cpHtml}
+  </svg>
+</div>`;
 }
 
 function renderWeather(weather, observation = null) {
@@ -380,19 +448,9 @@ function renderAep(aep) {
   const generatedAt = aep.generatedAt
     ? formatUsDateTime(new Date(aep.generatedAt), EASTERN_TIMEZONE)
     : null;
-  const checkpoints = aep.forecastCheckpoints.length
-    ? `<ul class="table-list">${aep.forecastCheckpoints
-        .map((point) => {
-          const time = formatUsHour(new Date(point.timestamp), EASTERN_TIMEZONE);
-          return `<li>
-            <span class="table-time">${escapeHtml(point.label)}</span>
-            <span class="table-detail">${escapeHtml(time)}: ${escapeHtml(
-              point.flowCfs.toLocaleString()
-            )} cfs</span>
-          </li>`;
-        })
-        .join("")}</ul>`
-    : `<p class="state">Forecast checkpoints unavailable.</p>`;
+  const flowGraph = aep.forecastCheckpoints.length
+    ? renderFlowGraph(aep)
+    : `<p class="state">Forecast unavailable.</p>`;
 
   el.aepUpdated.textContent = aep.lastUpdated
     ? `AEP data updated ${formatUsDateTime(new Date(aep.lastUpdated), EASTERN_TIMEZONE)} ET`
@@ -410,10 +468,7 @@ function renderAep(aep) {
         <p class="stat-value">${escapeHtml(releaseLag)}</p>
       </div>
     </div>
-    <div class="card-section">
-      <p class="section-label">Arrival outlook</p>
-      ${checkpoints}
-    </div>
+    ${flowGraph}
     <p class="card-meta">Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne Launch</a>${generatedAt ? ` | Synced ${escapeHtml(generatedAt)} ET` : ""}${currentAsOf ? ` | As of ${escapeHtml(currentAsOf)} ET` : ""}${aep.stale ? " | Data may be stale" : ""}</p>`
   );
 }
