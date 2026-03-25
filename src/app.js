@@ -309,70 +309,41 @@ function updateLocationLabels() {
 }
 
 function renderFlowGraph(aep) {
-  if (!aep.forecastCheckpoints || aep.forecastCheckpoints.length < 2) return "";
+  const pts = aep.forecastCheckpoints;
+  if (!pts || pts.length < 1) return "";
 
-  const now = Date.now();
-  // Dense line from forecastPoints (future only), fallback to checkpoints
-  const rawLine = aep.forecastPoints.length
-    ? aep.forecastPoints.filter((p) => p.timestamp >= now - 15 * 60 * 1000)
-    : aep.forecastCheckpoints;
-  if (rawLine.length < 2) return "";
-
-  const W = 540, H = 165;
-  const padL = 54, padR = 14, padT = 20, padB = 42;
+  const W = 480, H = 160;
+  const padL = 14, padR = 14, padT = 28, padB = 28;
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
-
-  const allFlows = rawLine.map((p) => p.flowCfs).concat(aep.forecastCheckpoints.map((p) => p.flowCfs));
-  const minF = Math.min(...allFlows);
-  const maxF = Math.max(...allFlows);
-  const fRange = maxF - minF || 100;
-
-  const minTs = rawLine[0].timestamp;
-  const maxTs = rawLine[rawLine.length - 1].timestamp;
-  const tsRange = maxTs - minTs || 1;
-
-  const xOf = (ts) => padL + ((ts - minTs) / tsRange) * plotW;
-  const yOf = (f) => padT + (1 - (f - minF) / fRange) * plotH;
   const baseY = padT + plotH;
 
-  // Area fill + line
-  const linePts = rawLine.map((p) => `${xOf(p.timestamp).toFixed(1)},${yOf(p.flowCfs).toFixed(1)}`);
-  const areaD =
-    `M${xOf(rawLine[0].timestamp).toFixed(1)},${yOf(rawLine[0].flowCfs).toFixed(1)} ` +
-    rawLine.slice(1).map((p) => `L${xOf(p.timestamp).toFixed(1)},${yOf(p.flowCfs).toFixed(1)}`).join(" ") +
-    ` L${xOf(maxTs).toFixed(1)},${baseY} L${xOf(minTs).toFixed(1)},${baseY} Z`;
+  const n = pts.length;
+  const gap = 8;
+  const barW = (plotW - gap * (n - 1)) / n;
 
-  // Grid lines
-  const gridHtml =
-    `<line x1="${padL}" y1="${padT}" x2="${padL + plotW}" y2="${padT}" class="graph-grid"/>` +
-    `<line x1="${padL}" y1="${baseY}" x2="${padL + plotW}" y2="${baseY}" class="graph-grid"/>`;
+  const maxF = Math.max(...pts.map((p) => p.flowCfs));
 
-  // Y axis labels (max on top, min on bottom)
-  const yAxisHtml =
-    `<text x="${padL - 5}" y="${padT + 4}" text-anchor="end" class="graph-axis">${maxF.toLocaleString()}</text>` +
-    `<text x="${padL - 5}" y="${baseY}" text-anchor="end" class="graph-axis">${minF.toLocaleString()}</text>`;
-
-  // Checkpoint dots + flow value labels + time labels below axis
-  const cpHtml = aep.forecastCheckpoints.map((cp) => {
-    const cx = xOf(cp.timestamp).toFixed(1);
-    const cy = yOf(cp.flowCfs);
-    const valueLabelY = cy < padT + 16 ? (cy + 14).toFixed(1) : (cy - 7).toFixed(1);
+  const barsHtml = pts.map((p, i) => {
+    const barH = (p.flowCfs / maxF) * plotH;
+    const x = (padL + i * (barW + gap)).toFixed(1);
+    const y = (baseY - barH).toFixed(1);
+    const isNow = p.label === "Now";
+    const valueLabelY = (baseY - barH - 5).toFixed(1);
     return (
-      `<circle cx="${cx}" cy="${cy.toFixed(1)}" r="3.5" fill="#1e7966" stroke="#fff" stroke-width="1.5"/>` +
-      `<text x="${cx}" y="${valueLabelY}" text-anchor="middle" class="graph-value">${cp.flowCfs.toLocaleString()}</text>` +
-      `<text x="${cx}" y="${(baseY + 14).toFixed(1)}" text-anchor="middle" class="graph-axis">${escapeHtml(cp.label)}</text>`
+      `<rect x="${x}" y="${y}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" rx="4" class="${isNow ? "flow-bar flow-bar-now" : "flow-bar"}"/>` +
+      `<text x="${(padL + i * (barW + gap) + barW / 2).toFixed(1)}" y="${valueLabelY}" text-anchor="middle" class="graph-value">${p.flowCfs.toLocaleString()}</text>` +
+      `<text x="${(padL + i * (barW + gap) + barW / 2).toFixed(1)}" y="${(baseY + 16).toFixed(1)}" text-anchor="middle" class="graph-axis">${escapeHtml(p.label)}</text>`
     );
   }).join("");
 
+  const baselineHtml = `<line x1="${padL}" y1="${baseY}" x2="${W - padR}" y2="${baseY}" class="graph-grid"/>`;
+
   return `<div class="flow-graph">
-  <p class="section-label">Flow Forecast</p>
-  <svg viewBox="0 0 ${W} ${H}" class="forecast-chart" role="img" aria-label="River flow forecast chart">
-    ${gridHtml}
-    <path d="${areaD}" class="chart-area"/>
-    <polyline points="${linePts.join(" ")}" fill="none" stroke="#1e7966" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-    ${yAxisHtml}
-    ${cpHtml}
+  <p class="section-label">Flow Forecast <span class="graph-unit">cfs</span></p>
+  <svg viewBox="0 0 ${W} ${H}" class="forecast-chart" role="img" aria-label="River flow forecast">
+    ${baselineHtml}
+    ${barsHtml}
   </svg>
 </div>`;
 }
