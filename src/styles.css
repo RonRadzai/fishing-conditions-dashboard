@@ -84,12 +84,9 @@ h1 {
 }
 
 .site-logo {
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.4rem;
+  height: 2.4rem;
   flex: 0 0 auto;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 2px 10px rgba(16, 43, 44, 0.25);
 }
 
 .subtitle {
@@ -690,6 +687,7 @@ a {
   padding: 0.3rem 0;
 }
 .qv-metric:not(:first-child) { border-left: 1px solid var(--line); }
+.qv-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-soft); font-weight: 700; margin-bottom: 0.1rem; }
 .qv-val { font-family: "IBM Plex Mono", monospace; font-size: 1.6rem; font-weight: 700; line-height: 1.1; }
 .qv-unit { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; margin-top: 0.15rem; }
 

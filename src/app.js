@@ -258,9 +258,9 @@ function renderQuickView(aep, weather, solunar, observation) {
   const windVal = nowWeather ? nowWeather.windSpeed : "--";
   const windDir = nowWeather ? nowWeather.windDirection : "";
   const metricsRow = `<div class="qv-metrics">
-    <div class="qv-metric"><span class="qv-val">${escapeHtml(flowVal)}</span><span class="qv-unit">cfs</span></div>
-    <div class="qv-metric"><span class="qv-val">${escapeHtml(tempVal)}</span><span class="qv-unit">${escapeHtml(tempUnit || "now")}</span></div>
-    <div class="qv-metric"><span class="qv-val">${escapeHtml(windVal)}</span><span class="qv-unit">${escapeHtml(windDir || "mph")}</span></div>
+    <div class="qv-metric"><span class="qv-label">Flow</span><span class="qv-val">${escapeHtml(flowVal)}</span><span class="qv-unit">cfs</span></div>
+    <div class="qv-metric"><span class="qv-label">Temp</span><span class="qv-val">${escapeHtml(tempVal)}</span><span class="qv-unit">${escapeHtml(tempUnit || "F")}</span></div>
+    <div class="qv-metric"><span class="qv-label">Wind</span><span class="qv-val">${escapeHtml(windVal)}</span><span class="qv-unit">${escapeHtml(windDir || "--")}</span></div>
   </div>`;
 
   // Periods
