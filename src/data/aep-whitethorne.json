@@ -2,51 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-03-28T13:43:07Z",
-  "lastUpdated": "2026-03-28T09:30:00",
-  "currentDateTime": 1774705387927,
+  "generatedAt": "2026-03-28T14:23:19Z",
+  "lastUpdated": "2026-03-28T10:15:00",
+  "currentDateTime": 1774707799387,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 1911,
+  "currentFlowCfs": 2003,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1774705387927,
-      "flowCfs": 1911
-    },
-    {
-      "label": "+1h",
-      "timestamp": 1774709100000,
-      "flowCfs": 1981
-    },
-    {
-      "label": "+2h",
-      "timestamp": 1774712700000,
-      "flowCfs": 2066
-    },
-    {
-      "label": "+4h",
-      "timestamp": 1774719900000,
+      "timestamp": 1774707799387,
       "flowCfs": 2003
     },
     {
+      "label": "+1h",
+      "timestamp": 1774711800000,
+      "flowCfs": 1863
+    },
+    {
+      "label": "+2h",
+      "timestamp": 1774715400000,
+      "flowCfs": 1773
+    },
+    {
+      "label": "+4h",
+      "timestamp": 1774722600000,
+      "flowCfs": 1768
+    },
+    {
       "label": "+8h",
-      "timestamp": 1774733400000,
-      "flowCfs": 1822
+      "timestamp": 1774736100000,
+      "flowCfs": 1964
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1774647000000,
-      "flowCfs": 1806
-    },
-    {
-      "timestamp": 1774647900000,
-      "flowCfs": 1900
-    },
-    {
-      "timestamp": 1774648800000,
-      "flowCfs": 1897
-    },
     {
       "timestamp": 1774649700000,
       "flowCfs": 2031
@@ -422,6 +410,18 @@
     {
       "timestamp": 1774733400000,
       "flowCfs": 1822
+    },
+    {
+      "timestamp": 1774734300000,
+      "flowCfs": 1969
+    },
+    {
+      "timestamp": 1774735200000,
+      "flowCfs": 1969
+    },
+    {
+      "timestamp": 1774736100000,
+      "flowCfs": 1964
     }
   ]
 }
