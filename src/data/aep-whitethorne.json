@@ -2,87 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-04-10T01:24:49Z",
-  "lastUpdated": "2026-04-09T21:15:00",
-  "currentDateTime": 1775784289386,
+  "generatedAt": "2026-04-10T04:23:03Z",
+  "lastUpdated": "2026-04-10T00:15:00",
+  "currentDateTime": 1775794740082,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 1913,
+  "currentFlowCfs": 1853,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1775784289386,
-      "flowCfs": 1913
+      "timestamp": 1775794740082,
+      "flowCfs": 1853
     },
     {
       "label": "+1h",
-      "timestamp": 1775788200000,
-      "flowCfs": 1846
+      "timestamp": 1775798100000,
+      "flowCfs": 1751
     },
     {
       "label": "+2h",
-      "timestamp": 1775791800000,
-      "flowCfs": 2184
+      "timestamp": 1775801700000,
+      "flowCfs": 1858
     },
     {
       "label": "+4h",
-      "timestamp": 1775799000000,
-      "flowCfs": 2012
+      "timestamp": 1775808900000,
+      "flowCfs": 1853
     },
     {
       "label": "+8h",
-      "timestamp": 1775812500000,
-      "flowCfs": 2015
+      "timestamp": 1775823300000,
+      "flowCfs": 1843
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1775726100000,
-      "flowCfs": 3962
-    },
-    {
-      "timestamp": 1775727000000,
-      "flowCfs": 1883
-    },
-    {
-      "timestamp": 1775727900000,
-      "flowCfs": 1884
-    },
-    {
-      "timestamp": 1775728800000,
-      "flowCfs": 1942
-    },
-    {
-      "timestamp": 1775729700000,
-      "flowCfs": 1909
-    },
-    {
-      "timestamp": 1775730600000,
-      "flowCfs": 1914
-    },
-    {
-      "timestamp": 1775731500000,
-      "flowCfs": 1925
-    },
-    {
-      "timestamp": 1775732400000,
-      "flowCfs": 1991
-    },
-    {
-      "timestamp": 1775733300000,
-      "flowCfs": 2088
-    },
-    {
-      "timestamp": 1775734200000,
-      "flowCfs": 1810
-    },
-    {
-      "timestamp": 1775735100000,
-      "flowCfs": 1863
-    },
-    {
-      "timestamp": 1775736000000,
-      "flowCfs": 1911
-    },
     {
       "timestamp": 1775736900000,
       "flowCfs": 1978
@@ -422,6 +374,54 @@
     {
       "timestamp": 1775812500000,
       "flowCfs": 2015
+    },
+    {
+      "timestamp": 1775813400000,
+      "flowCfs": 1781
+    },
+    {
+      "timestamp": 1775814300000,
+      "flowCfs": 1914
+    },
+    {
+      "timestamp": 1775815200000,
+      "flowCfs": 1951
+    },
+    {
+      "timestamp": 1775816100000,
+      "flowCfs": 1852
+    },
+    {
+      "timestamp": 1775817000000,
+      "flowCfs": 1955
+    },
+    {
+      "timestamp": 1775817900000,
+      "flowCfs": 1905
+    },
+    {
+      "timestamp": 1775818800000,
+      "flowCfs": 1907
+    },
+    {
+      "timestamp": 1775819700000,
+      "flowCfs": 2105
+    },
+    {
+      "timestamp": 1775820600000,
+      "flowCfs": 1805
+    },
+    {
+      "timestamp": 1775821500000,
+      "flowCfs": 1794
+    },
+    {
+      "timestamp": 1775822400000,
+      "flowCfs": 1883
+    },
+    {
+      "timestamp": 1775823300000,
+      "flowCfs": 1843
     }
   ]
 }
