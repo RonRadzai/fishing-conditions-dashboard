@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-04-17T15:34:18Z",
-  "lastUpdated": "2026-04-17T11:30:00",
-  "currentDateTime": 1776440058528,
+  "generatedAt": "2026-04-17T16:42:56Z",
+  "lastUpdated": "2026-04-17T12:30:00",
+  "currentDateTime": 1776444176643,
   "waterReleasedHoursOffset": 8,
   "currentFlowCfs": 1937,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1776440058528,
+      "timestamp": 1776444176643,
       "flowCfs": 1937
     },
     {
       "label": "+1h",
-      "timestamp": 1776443400000,
-      "flowCfs": 1934
+      "timestamp": 1776447900000,
+      "flowCfs": 1932
     },
     {
       "label": "+2h",
-      "timestamp": 1776447000000,
-      "flowCfs": 1934
+      "timestamp": 1776451500000,
+      "flowCfs": 1922
     },
     {
       "label": "+4h",
-      "timestamp": 1776454200000,
-      "flowCfs": 1912
+      "timestamp": 1776458700000,
+      "flowCfs": 1936
     },
     {
       "label": "+8h",
-      "timestamp": 1776468600000,
+      "timestamp": 1776472200000,
       "flowCfs": 1918
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1776382200000,
-      "flowCfs": 1909
-    },
-    {
-      "timestamp": 1776383100000,
-      "flowCfs": 1930
-    },
-    {
-      "timestamp": 1776384000000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1776384900000,
-      "flowCfs": 1938
-    },
     {
       "timestamp": 1776385800000,
       "flowCfs": 1936
@@ -421,6 +405,22 @@
     },
     {
       "timestamp": 1776468600000,
+      "flowCfs": 1918
+    },
+    {
+      "timestamp": 1776469500000,
+      "flowCfs": 1932
+    },
+    {
+      "timestamp": 1776470400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1776471300000,
+      "flowCfs": 1925
+    },
+    {
+      "timestamp": 1776472200000,
       "flowCfs": 1918
     }
   ]
