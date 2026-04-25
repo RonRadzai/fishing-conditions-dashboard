@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-04-25T08:41:07Z",
-  "lastUpdated": "2026-04-25T04:30:00",
-  "currentDateTime": 1777106466990,
+  "generatedAt": "2026-04-25T09:42:12Z",
+  "lastUpdated": "2026-04-25T05:30:00",
+  "currentDateTime": 1777109859134,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 508,
+  "currentFlowCfs": 943,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1777106466990,
-      "flowCfs": 508
+      "timestamp": 1777109859134,
+      "flowCfs": 943
     },
     {
       "label": "+1h",
-      "timestamp": 1777110300000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1777113900000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1777117500000,
+      "flowCfs": 10
+    },
+    {
       "label": "+4h",
-      "timestamp": 1777121100000,
+      "timestamp": 1777124700000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1777134600000,
-      "flowCfs": 1943
+      "timestamp": 1777138200000,
+      "flowCfs": 1913
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1777048200000,
-      "flowCfs": 1920
-    },
-    {
-      "timestamp": 1777049100000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1777050000000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1777050900000,
-      "flowCfs": 1950
-    },
     {
       "timestamp": 1777051800000,
       "flowCfs": 1927
@@ -422,6 +406,22 @@
     {
       "timestamp": 1777134600000,
       "flowCfs": 1943
+    },
+    {
+      "timestamp": 1777135500000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1777136400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1777137300000,
+      "flowCfs": 1936
+    },
+    {
+      "timestamp": 1777138200000,
+      "flowCfs": 1913
     }
   ]
 }
