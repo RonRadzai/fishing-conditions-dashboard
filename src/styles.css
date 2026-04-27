@@ -347,27 +347,6 @@ h2 {
   line-height: 1.4;
 }
 
-.qv-conditions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.qv-cond-text {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.qv-cond-detail {
-  font-size: 0.8rem;
-  color: var(--muted);
-  font-family: "IBM Plex Mono", monospace;
-  white-space: nowrap;
-}
-
 .data-rows {
   display: grid;
   gap: 0.52rem;
@@ -690,29 +669,92 @@ a {
 /* Quick-view card */
 .quick-view { margin-bottom: 1rem; }
 
-.qv-moon-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; }
+.qv-snapshot {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.95fr) minmax(165px, 0.8fr) minmax(260px, 1.25fr);
+  gap: 0.85rem;
+  align-items: stretch;
+  margin-bottom: 0.95rem;
+}
+
+.qv-moon-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
 .qv-moon-phase { font-weight: 700; font-size: 1.05rem; color: var(--ink); }
 .qv-moon-info { display: flex; flex-direction: column; gap: 0.3rem; }
 
-.qv-metrics {
+.qv-group {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  margin-bottom: 0.9rem;
-  padding: 0.7rem 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.46);
 }
-.qv-metric {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 0.3rem 0;
+
+.qv-group-moon {
+  border-left-color: var(--accent-warm);
+  background: linear-gradient(135deg, rgba(242, 198, 109, 0.16), rgba(255, 255, 255, 0.42));
 }
-.qv-metric:not(:first-child) { border-left: 1px solid var(--line); }
+
+.qv-group-river {
+  border-left-color: var(--accent);
+  background: linear-gradient(135deg, rgba(30, 121, 102, 0.09), rgba(255, 255, 255, 0.42));
+}
+
+.qv-group-weather {
+  border-left-color: var(--accent-2);
+  background: linear-gradient(135deg, rgba(29, 95, 162, 0.09), rgba(255, 255, 255, 0.42));
+}
+
+.qv-group-label {
+  margin: 0;
+  color: var(--muted-soft);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.qv-cond-text {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.qv-weather-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.qv-readout {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.qv-value-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
 .qv-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-soft); font-weight: 700; margin-bottom: 0.1rem; }
-.qv-val { font-family: "IBM Plex Mono", monospace; font-size: 1.6rem; font-weight: 700; line-height: 1.1; }
+.qv-val { font-family: "IBM Plex Mono", monospace; font-size: 1.48rem; font-weight: 700; line-height: 1.1; }
 .qv-unit { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; margin-top: 0.15rem; }
 
-.qv-next-label { margin: 0 0 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: var(--accent-2); }
+.qv-next-label { margin: 0 0 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: #9a6f17; }
 
 .qv-period {
   display: grid; grid-template-columns: 46px 1fr auto;
@@ -783,6 +825,15 @@ a {
 
   .table-time {
     width: fit-content;
+  }
+
+  .qv-snapshot {
+    grid-template-columns: 1fr;
+  }
+
+  .qv-moon-row {
+    padding-bottom: 0;
+    border-bottom: 0;
   }
 
   .solunar-day-trigger-meta {

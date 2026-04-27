@@ -270,35 +270,51 @@ function renderQuickView(aep, weather, solunar, observation) {
     ? getSolunarHighlightMeta(getSolunarHighlightMap(solunar.days).get(todayIndex))
     : { className: "", label: "", description: "" };
 
-  // Conditions line (between moon row and metrics)
-  const conditionsHtml = observation
-    ? `<div class="qv-conditions">
-        <span class="qv-cond-text">${escapeHtml(observation.textDescription || "--")}</span>
-      </div>`
-    : "";
-
-  // Moon row
+  // Moon conditions
   const moonIcon = phaseFraction !== null ? renderMoonPhaseIcon(phaseFraction) : "";
   const moonPhase = today ? escapeHtml(today.moonPhase) : "--";
-  const moonRow = `<div class="qv-moon-row">
+  const moonGroup = `<div class="qv-group qv-group-moon" aria-label="Moon and solunar conditions">
+    <p class="qv-group-label">Moon</p>
+    <div class="qv-moon-row">
     ${moonIcon}
-    <div class="qv-moon-info">
-      <span class="qv-moon-phase">${moonPhase}</span>
-      ${renderHighlightPill(highlight)}
+      <div class="qv-moon-info">
+        <span class="qv-moon-phase">${moonPhase}</span>
+        ${renderHighlightPill(highlight)}
+      </div>
     </div>
   </div>`;
 
-  // Metrics row
+  // Current conditions
   const flowVal = aep ? aep.currentFlowCfs.toLocaleString() : "--";
   const nowWeather = weather && weather.periods.length ? weather.periods[0] : null;
   const tempVal = nowWeather ? `${nowWeather.temperature}°` : "--";
   const tempUnit = nowWeather ? nowWeather.temperatureUnit : "";
   const windVal = nowWeather ? nowWeather.windSpeed : "--";
   const windDir = nowWeather ? nowWeather.windDirection : "";
-  const metricsRow = `<div class="qv-metrics">
-    <div class="qv-metric"><span class="qv-label">Flow</span><span class="qv-val">${escapeHtml(flowVal)}</span><span class="qv-unit">cfs</span></div>
-    <div class="qv-metric"><span class="qv-label">Temp</span><span class="qv-val">${escapeHtml(tempVal)}</span><span class="qv-unit">${escapeHtml(tempUnit || "F")}</span></div>
-    <div class="qv-metric"><span class="qv-label">Wind</span><span class="qv-val">${escapeHtml(windVal)}</span><span class="qv-unit">${escapeHtml(windDir || "--")}</span></div>
+  const conditionText = observation ? escapeHtml(observation.textDescription || "--") : "";
+  const currentConditions = `<div class="qv-snapshot">
+    ${moonGroup}
+    <div class="qv-group qv-group-river" aria-label="River conditions">
+      <p class="qv-group-label">River</p>
+      <div class="qv-readout">
+        <span class="qv-label">Current flow</span>
+        <span class="qv-value-line"><span class="qv-val">${escapeHtml(flowVal)}</span><span class="qv-unit">cfs</span></span>
+      </div>
+    </div>
+    <div class="qv-group qv-group-weather" aria-label="Weather conditions">
+      <p class="qv-group-label">Weather</p>
+      ${conditionText ? `<p class="qv-cond-text">${conditionText}</p>` : ""}
+      <div class="qv-weather-metrics">
+        <div class="qv-readout">
+          <span class="qv-label">Air temp</span>
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(tempVal)}</span><span class="qv-unit">${escapeHtml(tempUnit || "F")}</span></span>
+        </div>
+        <div class="qv-readout">
+          <span class="qv-label">Wind</span>
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(windVal)}</span><span class="qv-unit">${escapeHtml(windDir || "--")}</span></span>
+        </div>
+      </div>
+    </div>
   </div>`;
 
   // Periods
@@ -323,7 +339,7 @@ function renderQuickView(aep, weather, solunar, observation) {
   }
 
   const periodsSection = `<div class="qv-periods">
-    <p class="qv-next-label">next up</p>
+    <p class="qv-next-label">moon windows</p>
     ${periodsHtml}
   </div>`;
 
@@ -337,7 +353,7 @@ function renderQuickView(aep, weather, solunar, observation) {
     ${freshnessStatus}
   </div>`;
 
-  setHtml(el.qvContent, moonRow + conditionsHtml + metricsRow + periodsSection + footer);
+  setHtml(el.qvContent, currentConditions + periodsSection + footer);
 }
 
 function updateLocationLabels() {
