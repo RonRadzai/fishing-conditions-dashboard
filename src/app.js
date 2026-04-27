@@ -236,6 +236,31 @@ function parsePeriodStartTime(rangeStr, todayYmd) {
   return new Date(Date.UTC(year, month, day, hours - tzOffset, minutes, 0));
 }
 
+function parsePeriodEndTime(rangeStr, todayYmd) {
+  if (!rangeStr) return null;
+  const parts = rangeStr.split(" - ");
+  if (parts.length < 2) return null;
+  const timeStr = parts[1].trim();
+  const match = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(timeStr);
+  if (!match) return null;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const meridiem = match[3].toUpperCase();
+
+  if (meridiem === "AM") {
+    if (hours === 12) hours = 0;
+  } else {
+    if (hours !== 12) hours += 12;
+  }
+
+  const tzOffset = getEasternTzInteger(new Date());
+  const year = Number(todayYmd.slice(0, 4));
+  const month = Number(todayYmd.slice(4, 6)) - 1;
+  const day = Number(todayYmd.slice(6, 8));
+  return new Date(Date.UTC(year, month, day, hours - tzOffset, minutes, 0));
+}
+
 function formatCountdown(diffMs) {
   if (diffMs < 60000) return "now";
   if (diffMs < 3600000) return `in ${Math.floor(diffMs / 60000)}m`;
@@ -256,10 +281,23 @@ function getUpcomingSolunarPeriods(todayData) {
   ];
 
   return periods
-    .map((p) => ({ ...p, startTime: parsePeriodStartTime(p.range, ymd) }))
-    .filter((p) => p.startTime && p.startTime.getTime() > now)
+    .map((p) => ({
+      ...p,
+      startTime: parsePeriodStartTime(p.range, ymd),
+      endTime: parsePeriodEndTime(p.range, ymd),
+    }))
+    .filter((p) => {
+      if (!p.startTime) return false;
+      const cutoff = p.endTime ? p.endTime.getTime() + 30 * 60000 : p.startTime.getTime();
+      return cutoff > now;
+    })
     .sort((a, b) => a.startTime - b.startTime)
-    .map((p) => ({ ...p, countdown: formatCountdown(p.startTime.getTime() - now) }));
+    .map((p) => {
+      const countdown = p.startTime.getTime() > now
+        ? formatCountdown(p.startTime.getTime() - now)
+        : "active";
+      return { ...p, countdown };
+    });
 }
 
 function renderQuickView(aep, weather, solunar, observation) {
@@ -292,6 +330,8 @@ function renderQuickView(aep, weather, solunar, observation) {
   const windVal = nowWeather ? nowWeather.windSpeed : "--";
   const windDir = nowWeather ? nowWeather.windDirection : "";
   const conditionText = observation ? escapeHtml(observation.textDescription || "--") : "";
+  const humidityVal = observation && observation.relativeHumidity != null ? `${observation.relativeHumidity}` : "--";
+  const pressureVal = observation && observation.barometricPressure != null ? `${observation.barometricPressure}` : "--";
   const currentConditions = `<div class="qv-snapshot">
     ${moonGroup}
     <div class="qv-group qv-group-river" aria-label="River conditions">
@@ -312,6 +352,14 @@ function renderQuickView(aep, weather, solunar, observation) {
         <div class="qv-readout">
           <span class="qv-label">Wind</span>
           <span class="qv-value-line"><span class="qv-val">${escapeHtml(windVal)}</span><span class="qv-unit">${escapeHtml(windDir || "--")}</span></span>
+        </div>
+        <div class="qv-readout">
+          <span class="qv-label">Humidity</span>
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(humidityVal)}</span><span class="qv-unit">%</span></span>
+        </div>
+        <div class="qv-readout">
+          <span class="qv-label">Pressure</span>
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(pressureVal)}</span><span class="qv-unit">inHg</span></span>
         </div>
       </div>
     </div>
@@ -344,12 +392,12 @@ function renderQuickView(aep, weather, solunar, observation) {
   </div>`;
 
   // Footer
-  const sunText = today ? `☀ ${escapeHtml(today.sunrise)} – ${escapeHtml(today.sunset)}` : "☀ --";
+  const sunTimes = today ? `${escapeHtml(today.sunrise)} – ${escapeHtml(today.sunset)}` : "--";
   const freshnessStatus = aep && aep.stale
     ? `<span class="summary-status is-stale">Stale</span>`
     : "";
   const footer = `<div class="qv-footer">
-    <span class="qv-sun">${sunText}</span>
+    <span class="qv-sun"><span class="qv-sun-label">☀ sunrise – sunset</span><span class="qv-sun-times">${sunTimes}</span></span>
     ${freshnessStatus}
   </div>`;
 

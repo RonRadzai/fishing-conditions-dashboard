@@ -771,10 +771,12 @@ a {
 .qv-done { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.88rem; font-style: italic; }
 
 .qv-footer {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: space-between; align-items: flex-start;
   margin-top: 0.8rem; padding-top: 0.65rem; border-top: 1px solid var(--line);
 }
-.qv-sun { font-size: 0.82rem; color: var(--muted); }
+.qv-sun { font-size: 0.82rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.1rem; }
+.qv-sun-label { font-weight: 500; }
+.qv-sun-times { font-family: var(--font-mono, monospace); }
 
 /* Flow forecast graph */
 .flow-graph { margin-bottom: 1rem; }
