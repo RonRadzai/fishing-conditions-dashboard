@@ -1,4 +1,10 @@
-import { buildSolunarDates, getEasternTzInteger } from "../utils.js";
+import {
+  buildSolunarDates,
+  getApproximateMoonPhaseName,
+  getEasternTzInteger,
+  getMoonPhaseTypeFromText,
+  getTrackedMoonPhaseForDate,
+} from "../utils.js";
 
 const MINUTES_PER_DAY = 24 * 60;
 
@@ -85,6 +91,17 @@ function pickRange(startText, stopText) {
   return fmtRange(start, stop);
 }
 
+function getMoonPhaseFields(rawPhase, yyyymmdd) {
+  const trackedPhase = getTrackedMoonPhaseForDate(yyyymmdd);
+  const phaseText = rawPhase ?? "N/A";
+
+  return {
+    moonPhase: trackedPhase?.label ?? phaseText,
+    moonPhaseType: trackedPhase?.type ?? getMoonPhaseTypeFromText(phaseText),
+    moonPhaseEventTime: trackedPhase ? trackedPhase.date.toISOString() : null,
+  };
+}
+
 function normalizeSolunar(raw, yyyymmdd) {
   const moonrise = raw.moonRise ?? "N/A";
   const moonset = raw.moonSet ?? "N/A";
@@ -93,6 +110,7 @@ function normalizeSolunar(raw, yyyymmdd) {
   const major2Range = pickRange(raw.major2Start, raw.major2Stop);
   const minor1Range = pickRange(raw.minor1Start, raw.minor1Stop);
   const minor2Range = pickRange(raw.minor2Start, raw.minor2Stop);
+  const moonPhase = getMoonPhaseFields(raw.moonPhase, yyyymmdd);
 
   return {
     dateYmd: yyyymmdd,
@@ -100,11 +118,32 @@ function normalizeSolunar(raw, yyyymmdd) {
     sunset: formatClockText(raw.sunSet),
     moonrise: formatClockText(moonrise),
     moonset: formatClockText(moonset),
-    moonPhase: raw.moonPhase ?? "N/A",
+    ...moonPhase,
     major1: major1Range ?? computed.major1,
     major2: major2Range ?? computed.major2,
     minor1: minor1Range ?? computed.minor1,
     minor2: minor2Range ?? computed.minor2,
+    isMissing: false,
+  };
+}
+
+function createMissingSolunarDay(yyyymmdd) {
+  const trackedPhase = getTrackedMoonPhaseForDate(yyyymmdd);
+
+  return {
+    dateYmd: yyyymmdd,
+    sunrise: "N/A",
+    sunset: "N/A",
+    moonrise: "N/A",
+    moonset: "N/A",
+    moonPhase: trackedPhase?.label ?? getApproximateMoonPhaseName(yyyymmdd),
+    moonPhaseType: trackedPhase?.type ?? null,
+    moonPhaseEventTime: trackedPhase ? trackedPhase.date.toISOString() : null,
+    major1: "N/A",
+    major2: "N/A",
+    minor1: "N/A",
+    minor2: "N/A",
+    isMissing: true,
   };
 }
 
@@ -134,8 +173,9 @@ export async function getSolunarRange(lat, lon, _tz, days = 7) {
   return {
     startDate: dates[0],
     days: results
-      .filter((result) => result.status === "fulfilled")
-      .map((result) => result.value),
+      .map((result, index) => (
+        result.status === "fulfilled" ? result.value : createMissingSolunarDay(dates[index])
+      )),
     missingDates: results
       .map((result, index) => (result.status === "rejected" ? dates[index] : null))
       .filter(Boolean),

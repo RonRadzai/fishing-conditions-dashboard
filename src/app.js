@@ -9,6 +9,8 @@ import {
   formatUsDateTime,
   formatUsHour,
   getEasternTzInteger,
+  getMoonPhaseFractionForDate,
+  getMoonPhaseTypeFromText,
   setHtml,
 } from "./utils.js";
 
@@ -52,22 +54,6 @@ const state = {
   observation: null,
 };
 
-function getMoonPhaseFraction(date) {
-  const knownNewMoonMs = Date.UTC(2000, 0, 6, 18, 14, 0);
-  const synodicPeriodMs = 29.53059 * 24 * 60 * 60 * 1000;
-  const elapsed = date.getTime() - knownNewMoonMs;
-  return (((elapsed % synodicPeriodMs) + synodicPeriodMs) % synodicPeriodMs) / synodicPeriodMs;
-}
-
-function dateFromYmd(yyyymmdd) {
-  return new Date(Date.UTC(
-    Number(yyyymmdd.slice(0, 4)),
-    Number(yyyymmdd.slice(4, 6)) - 1,
-    Number(yyyymmdd.slice(6, 8)),
-    12, 0, 0
-  ));
-}
-
 function renderState(target, message, isError = false) {
   setHtml(target, `<p class="state ${isError ? "error" : ""}">${escapeHtml(message)}</p>`);
 }
@@ -76,37 +62,74 @@ function isActiveRequest(loadId) {
   return state.activeLoadId === loadId;
 }
 
-function renderMoonPhaseIcon(phaseFraction) {
+function getMoonLitMarkup(phaseFraction) {
+  const normalizedPhase = ((phaseFraction % 1) + 1) % 1;
   const cx = 20, cy = 20, R = 18;
   const topY = cy - R;
   const botY = cy + R;
 
-  let litPath;
-  if (phaseFraction < 0.5) {
-    const rx = (R * Math.abs(Math.cos(2 * Math.PI * phaseFraction))).toFixed(2);
-    const sweep = phaseFraction < 0.25 ? 0 : 1;
-    litPath = `M${cx},${topY} A${R},${R} 0 0 1 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
-  } else {
-    const wf = phaseFraction - 0.5;
-    const rx = (R * Math.abs(Math.cos(2 * Math.PI * wf))).toFixed(2);
-    const sweep = wf < 0.25 ? 0 : 1;
-    litPath = `M${cx},${topY} A${R},${R} 0 0 0 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
+  if (normalizedPhase <= 0.01 || normalizedPhase >= 0.99) {
+    return "";
+  }
+  if (Math.abs(normalizedPhase - 0.5) <= 0.01) {
+    return `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#F6E7B0"/>`;
+  }
+  if (normalizedPhase < 0.5) {
+    const rx = (R * Math.abs(Math.cos(2 * Math.PI * normalizedPhase))).toFixed(2);
+    const sweep = normalizedPhase < 0.25 ? 0 : 1;
+    return `<path d="M${cx},${topY} A${R},${R} 0 0 1 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z" fill="#F6E7B0"/>`;
   }
 
-  return `<span class="moon-icon" aria-hidden="true">
+  const wf = normalizedPhase - 0.5;
+  const rx = (R * Math.abs(Math.cos(2 * Math.PI * wf))).toFixed(2);
+  const sweep = wf < 0.25 ? 0 : 1;
+  return `<path d="M${cx},${topY} A${R},${R} 0 0 0 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z" fill="#F6E7B0"/>`;
+}
+
+function renderMoonPhaseIcon(phaseFraction, className = "") {
+  const classes = ["moon-icon", className].filter(Boolean).join(" ");
+
+  return `<span class="${classes}" aria-hidden="true">
     <svg viewBox="0 0 40 40" class="moon-svg">
-      <circle cx="${cx}" cy="${cy}" r="${R}" fill="#0E1625"/>
-      <path d="${litPath}" fill="#F6E7B0"/>
-      <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#FFF6D8" stroke-width="0.8" opacity="0.4"/>
+      <circle cx="20" cy="20" r="18" fill="#0E1625"/>
+      ${getMoonLitMarkup(phaseFraction)}
+      <circle cx="20" cy="20" r="18" fill="none" stroke="#FFF6D8" stroke-width="0.8" opacity="0.4"/>
     </svg>
   </span>`;
+}
+
+function isMajorMoonPhaseDay(day) {
+  if (!day) {
+    return false;
+  }
+  if (day.moonPhaseType === "full" || day.moonPhaseType === "new") {
+    return true;
+  }
+  if (!Object.prototype.hasOwnProperty.call(day, "moonPhaseType")) {
+    return Boolean(getMoonPhaseTypeFromText(day.moonPhase));
+  }
+  return false;
+}
+
+function getDisplayMoonPhaseFraction(day) {
+  if (day?.moonPhaseType === "new") {
+    return 0;
+  }
+  if (day?.moonPhaseType === "full") {
+    return 0.5;
+  }
+  return getMoonPhaseFractionForDate(day.dateYmd);
+}
+
+function renderMoonIconSm(phaseFraction) {
+  return renderMoonPhaseIcon(phaseFraction, "moon-icon-sm");
 }
 
 function getSolunarHighlightMap(days) {
   const highlightMap = new Map(days.map((_, index) => [index, "normal"]));
   const anchorIndexes = days
-    .map((day, index) => ({ phase: day.moonPhase, index }))
-    .filter(({ phase }) => /^(full|new)\b/i.test(String(phase).trim()))
+    .map((day, index) => ({ day, index }))
+    .filter(({ day }) => isMajorMoonPhaseDay(day))
     .map(({ index }) => index);
 
   anchorIndexes.forEach((anchorIndex) => {
@@ -131,8 +154,9 @@ function getSolunarHighlightMeta(level) {
   if (level === "peak") {
     return {
       className: "solunar-highlight-peak",
-      label: "Peak day",
+      label: "Best day",
       description: "Full or New Moon",
+      isPeak: true,
     };
   }
   if (level === "window") {
@@ -140,12 +164,14 @@ function getSolunarHighlightMeta(level) {
       className: "solunar-highlight-window",
       label: "Prime window",
       description: "Within 2 days of Full or New Moon",
+      isPeak: false,
     };
   }
   return {
     className: "",
     label: "",
     description: "",
+    isPeak: false,
   };
 }
 
@@ -168,9 +194,21 @@ function renderHighlightPill(meta) {
   }
 
   return `<div class="solunar-highlight-pill ${meta.className}">
+    ${meta.isPeak ? `<span class="solunar-peak-star" aria-hidden="true">&#9733;</span>` : ""}
     <span>${escapeHtml(meta.label)}</span>
     <span>${escapeHtml(meta.description)}</span>
   </div>`;
+}
+
+function renderSolunarTriggerPill(highlight) {
+  if (!highlight.label) {
+    return "";
+  }
+
+  return `<span class="solunar-trigger-pill ${highlight.className}">
+    ${highlight.isPeak ? `<span class="solunar-peak-star" aria-hidden="true">&#9733;</span>` : ""}
+    <span>${escapeHtml(highlight.label)}</span>
+  </span>`;
 }
 
 function parsePeriodStartTime(rangeStr, todayYmd) {
@@ -226,7 +264,7 @@ function getUpcomingSolunarPeriods(todayData) {
 
 function renderQuickView(aep, weather, solunar, observation) {
   const today = solunar ? (solunar.days.find((d) => d.dateYmd === solunar.startDate) ?? null) : null;
-  const phaseFraction = today ? getMoonPhaseFraction(dateFromYmd(today.dateYmd)) : null;
+  const phaseFraction = today ? getDisplayMoonPhaseFraction(today) : null;
   const todayIndex = solunar ? solunar.days.findIndex((d) => d.dateYmd === solunar.startDate) : -1;
   const highlight = solunar && todayIndex >= 0
     ? getSolunarHighlightMeta(getSolunarHighlightMap(solunar.days).get(todayIndex))
@@ -485,34 +523,29 @@ function renderSolunarTimingCard(title, timings, emphasis) {
   </section>`;
 }
 
-function getMoonLitPath(phaseFraction) {
-  const cx = 20, cy = 20, R = 18;
-  const topY = cy - R, botY = cy + R;
-  if (phaseFraction < 0.5) {
-    const rx = (R * Math.abs(Math.cos(2 * Math.PI * phaseFraction))).toFixed(2);
-    const sweep = phaseFraction < 0.25 ? 0 : 1;
-    return `M${cx},${topY} A${R},${R} 0 0 1 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
-  } else {
-    const wf = phaseFraction - 0.5;
-    const rx = (R * Math.abs(Math.cos(2 * Math.PI * wf))).toFixed(2);
-    const sweep = wf < 0.25 ? 0 : 1;
-    return `M${cx},${topY} A${R},${R} 0 0 0 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z`;
-  }
-}
-
-function renderMoonIconSm(phaseFraction) {
-  const litPath = getMoonLitPath(phaseFraction);
-  return `<span class="moon-icon moon-icon-sm" aria-hidden="true">
-    <svg viewBox="0 0 40 40" class="moon-svg">
-      <circle cx="20" cy="20" r="18" fill="#0E1625"/>
-      <path d="${litPath}" fill="#F6E7B0"/>
-      <circle cx="20" cy="20" r="18" fill="none" stroke="#FFF6D8" stroke-width="0.8" opacity="0.4"/>
-    </svg>
-  </span>`;
-}
-
 function renderTodaySolunarCard(today, todayHighlight) {
-  const phaseFraction = getMoonPhaseFraction(dateFromYmd(today.dateYmd));
+  const phaseFraction = getDisplayMoonPhaseFraction(today);
+  const timingHtml = today.isMissing
+    ? `<p class="state error">Solunar timing unavailable for this date.</p>`
+    : `<div class="solunar-today-grid">
+      ${renderSolunarTimingCard(
+        "Major periods",
+        [
+          { label: "Major 1", value: today.major1, emphasis: "major" },
+          { label: "Major 2", value: today.major2, emphasis: "major" },
+        ],
+        "major"
+      )}
+      ${renderSolunarTimingCard(
+        "Minor periods",
+        [
+          { label: "Minor 1", value: today.minor1, emphasis: "minor" },
+          { label: "Minor 2", value: today.minor2, emphasis: "minor" },
+        ],
+        "minor"
+      )}
+    </div>`;
+
   return `<section class="solunar-today ${todayHighlight.className}">
     <div class="solunar-today-header">
       <div>
@@ -534,31 +567,26 @@ function renderTodaySolunarCard(today, todayHighlight) {
         <p class="meta-chip-value">${escapeHtml(today.moonrise)} to ${escapeHtml(today.moonset)}</p>
       </div>
     </div>
-    <div class="solunar-today-grid">
-      ${renderSolunarTimingCard(
-        "Major periods",
-        [
-          { label: "Major 1", value: today.major1, emphasis: "major" },
-          { label: "Major 2", value: today.major2, emphasis: "major" },
-        ],
-        "major"
-      )}
-      ${renderSolunarTimingCard(
-        "Minor periods",
-        [
-          { label: "Minor 1", value: today.minor1, emphasis: "minor" },
-          { label: "Minor 2", value: today.minor2, emphasis: "minor" },
-        ],
-        "minor"
-      )}
-    </div>
+    ${timingHtml}
   </section>`;
 }
 
 function renderFutureSolunarItem(day, index, highlight) {
   const isOpen = state.expandedFutureIndex === index;
   const panelId = `solunar-day-panel-${index}`;
-  const phaseFraction = getMoonPhaseFraction(dateFromYmd(day.dateYmd));
+  const phaseFraction = getDisplayMoonPhaseFraction(day);
+  const bodyHtml = day.isMissing
+    ? `<p class="state error">Solunar timing unavailable for this date.</p>`
+    : `${renderDataRows([
+        { label: "Major 1", value: day.major1, emphasis: "major" },
+        { label: "Major 2", value: day.major2, emphasis: "major" },
+        { label: "Minor 1", value: day.minor1, emphasis: "minor" },
+        { label: "Minor 2", value: day.minor2, emphasis: "minor" },
+      ])}
+      <div class="solunar-day-meta">
+        <p>Sun ${escapeHtml(day.sunrise)} to ${escapeHtml(day.sunset)}</p>
+        <p>Moon ${escapeHtml(day.moonrise)} to ${escapeHtml(day.moonset)}</p>
+      </div>`;
 
   return `<article class="solunar-day-card ${highlight.className} ${isOpen ? "is-open" : ""}">
     <button
@@ -576,23 +604,12 @@ function renderFutureSolunarItem(day, index, highlight) {
         </div>
       </div>
       <div class="solunar-day-trigger-meta">
-        ${highlight.label ? `<span class="solunar-trigger-pill ${highlight.className}">${escapeHtml(
-          highlight.label
-        )}</span>` : ""}
+        ${renderSolunarTriggerPill(highlight)}
         <span class="solunar-chevron" aria-hidden="true">${isOpen ? "−" : "+"}</span>
       </div>
     </button>
     <div id="${panelId}" class="solunar-day-body" ${isOpen ? "" : "hidden"}>
-      ${renderDataRows([
-        { label: "Major 1", value: day.major1, emphasis: "major" },
-        { label: "Major 2", value: day.major2, emphasis: "major" },
-        { label: "Minor 1", value: day.minor1, emphasis: "minor" },
-        { label: "Minor 2", value: day.minor2, emphasis: "minor" },
-      ])}
-      <div class="solunar-day-meta">
-        <p>Sun ${escapeHtml(day.sunrise)} to ${escapeHtml(day.sunset)}</p>
-        <p>Moon ${escapeHtml(day.moonrise)} to ${escapeHtml(day.moonset)}</p>
-      </div>
+      ${bodyHtml}
     </div>
   </article>`;
 }

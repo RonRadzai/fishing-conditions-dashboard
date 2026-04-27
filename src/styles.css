@@ -460,6 +460,20 @@ h2 {
   letter-spacing: 0.03em;
 }
 
+.solunar-peak-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  background: rgba(242, 198, 109, 0.34);
+  color: #7a5200;
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
 .solunar-highlight-pill span:last-child {
   font-weight: 600;
   opacity: 0.86;
@@ -615,11 +629,18 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
   padding: 0.38rem 0.6rem;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+}
+
+.solunar-trigger-pill .solunar-peak-star {
+  width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.66rem;
 }
 
 .solunar-trigger-pill.solunar-highlight-peak {
