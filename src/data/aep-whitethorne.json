@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-05-03T17:38:32Z",
-  "lastUpdated": "2026-05-03T13:30:00",
-  "currentDateTime": 1777829912209,
+  "generatedAt": "2026-05-03T18:43:01Z",
+  "lastUpdated": "2026-05-03T14:30:00",
+  "currentDateTime": 1777833781849,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 834,
+  "currentFlowCfs": 260,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1777829912209,
-      "flowCfs": 834
+      "timestamp": 1777833781849,
+      "flowCfs": 260
     },
     {
       "label": "+1h",
-      "timestamp": 1777833900000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1777837500000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1777841100000,
+      "flowCfs": 10
+    },
+    {
       "label": "+4h",
-      "timestamp": 1777844700000,
+      "timestamp": 1777848300000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1777858200000,
-      "flowCfs": 1926
+      "timestamp": 1777861800000,
+      "flowCfs": 1933
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1777771800000,
-      "flowCfs": 1923
-    },
-    {
-      "timestamp": 1777772700000,
-      "flowCfs": 1927
-    },
-    {
-      "timestamp": 1777773600000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1777774500000,
-      "flowCfs": 1934
-    },
     {
       "timestamp": 1777775400000,
       "flowCfs": 1934
@@ -422,6 +406,22 @@
     {
       "timestamp": 1777858200000,
       "flowCfs": 1926
+    },
+    {
+      "timestamp": 1777859100000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1777860000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1777860900000,
+      "flowCfs": 1926
+    },
+    {
+      "timestamp": 1777861800000,
+      "flowCfs": 1933
     }
   ]
 }
