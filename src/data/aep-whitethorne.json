@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-05-03T14:40:32Z",
-  "lastUpdated": "2026-05-03T10:30:00",
-  "currentDateTime": 1777819232382,
+  "generatedAt": "2026-05-03T15:37:36Z",
+  "lastUpdated": "2026-05-03T11:30:00",
+  "currentDateTime": 1777822656368,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 582,
+  "currentFlowCfs": 958,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1777819232382,
-      "flowCfs": 582
+      "timestamp": 1777822656368,
+      "flowCfs": 958
     },
     {
       "label": "+1h",
-      "timestamp": 1777823100000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1777826700000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1777830300000,
+      "flowCfs": 10
+    },
+    {
       "label": "+4h",
-      "timestamp": 1777833900000,
+      "timestamp": 1777837500000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1777847400000,
-      "flowCfs": 1918
+      "timestamp": 1777851000000,
+      "flowCfs": 1925
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1777761000000,
-      "flowCfs": 1919
-    },
-    {
-      "timestamp": 1777761900000,
-      "flowCfs": 1913
-    },
-    {
-      "timestamp": 1777762800000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1777763700000,
-      "flowCfs": 1920
-    },
     {
       "timestamp": 1777764600000,
       "flowCfs": 1919
@@ -422,6 +406,22 @@
     {
       "timestamp": 1777847400000,
       "flowCfs": 1918
+    },
+    {
+      "timestamp": 1777848300000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1777849200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1777850100000,
+      "flowCfs": 1926
+    },
+    {
+      "timestamp": 1777851000000,
+      "flowCfs": 1925
     }
   ]
 }
