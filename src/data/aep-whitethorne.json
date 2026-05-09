@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-05-09T16:40:52Z",
-  "lastUpdated": "2026-05-09T12:30:00",
-  "currentDateTime": 1778344852178,
+  "generatedAt": "2026-05-09T17:41:00Z",
+  "lastUpdated": "2026-05-09T13:30:00",
+  "currentDateTime": 1778348460894,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 537,
+  "currentFlowCfs": 517,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1778344852178,
-      "flowCfs": 537
+      "timestamp": 1778348460894,
+      "flowCfs": 517
     },
     {
       "label": "+1h",
-      "timestamp": 1778348700000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1778352300000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1778355900000,
+      "flowCfs": 11
+    },
+    {
       "label": "+4h",
-      "timestamp": 1778359500000,
+      "timestamp": 1778363100000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1778373000000,
-      "flowCfs": 1910
+      "timestamp": 1778376600000,
+      "flowCfs": 1918
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1778286600000,
-      "flowCfs": 1947
-    },
-    {
-      "timestamp": 1778287500000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778288400000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778289300000,
-      "flowCfs": 1943
-    },
     {
       "timestamp": 1778290200000,
       "flowCfs": 1939
@@ -422,6 +406,22 @@
     {
       "timestamp": 1778373000000,
       "flowCfs": 1910
+    },
+    {
+      "timestamp": 1778373900000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1778374800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1778375700000,
+      "flowCfs": 1935
+    },
+    {
+      "timestamp": 1778376600000,
+      "flowCfs": 1918
     }
   ]
 }
