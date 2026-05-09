@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-05-09T22:32:58Z",
-  "lastUpdated": "2026-05-09T18:30:00",
-  "currentDateTime": 1778365978401,
+  "generatedAt": "2026-05-09T23:37:01Z",
+  "lastUpdated": "2026-05-09T19:30:00",
+  "currentDateTime": 1778369821344,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 1549,
+  "currentFlowCfs": 1026,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1778365978401,
-      "flowCfs": 1549
+      "timestamp": 1778369821344,
+      "flowCfs": 1026
     },
     {
       "label": "+1h",
-      "timestamp": 1778369400000,
-      "flowCfs": 1919
-    },
-    {
-      "label": "+2h",
       "timestamp": 1778373000000,
       "flowCfs": 1910
     },
     {
+      "label": "+2h",
+      "timestamp": 1778376600000,
+      "flowCfs": 1918
+    },
+    {
       "label": "+4h",
-      "timestamp": 1778380200000,
-      "flowCfs": 1927
+      "timestamp": 1778383800000,
+      "flowCfs": 1934
     },
     {
       "label": "+8h",
-      "timestamp": 1778394600000,
-      "flowCfs": 1924
+      "timestamp": 1778398200000,
+      "flowCfs": 1926
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1778308200000,
-      "flowCfs": 1926
-    },
-    {
-      "timestamp": 1778309100000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778310000000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778310900000,
-      "flowCfs": 1938
-    },
     {
       "timestamp": 1778311800000,
       "flowCfs": 1927
@@ -422,6 +406,22 @@
     {
       "timestamp": 1778394600000,
       "flowCfs": 1924
+    },
+    {
+      "timestamp": 1778395500000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1778396400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1778397300000,
+      "flowCfs": 1933
+    },
+    {
+      "timestamp": 1778398200000,
+      "flowCfs": 1926
     }
   ]
 }
