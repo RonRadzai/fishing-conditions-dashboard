@@ -13,7 +13,7 @@ Shows:
 
 ## Data sources
 
-- Solunar: `api.solunar.org`
+- Solunar: local sun/moon calculations in the browser
 - AEP flow: `src/data/aep-whitethorne.json` (auto-updated by GitHub Actions)
 - USGS: `api.waterdata.usgs.gov`
 - Weather: `api.weather.gov`
