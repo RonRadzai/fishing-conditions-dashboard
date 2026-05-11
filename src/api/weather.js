@@ -1,23 +1,27 @@
+import { fetchWithTimeout } from "../utils.js";
+
+const WEATHER_TIMEOUT_MS = 8000;
+
 export async function getCurrentObservation(lat, lon) {
-  const pointsRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+  const pointsRes = await fetchWithTimeout(`https://api.weather.gov/points/${lat},${lon}`, {
     headers: { Accept: "application/geo+json" },
-  });
+  }, WEATHER_TIMEOUT_MS);
   if (!pointsRes.ok) throw new Error("NWS points lookup failed.");
 
   const pointsData = await pointsRes.json();
   const stationsUrl = pointsData.properties?.observationStations;
   if (!stationsUrl) throw new Error("NWS points response missing observationStations.");
 
-  const stationsRes = await fetch(stationsUrl, { headers: { Accept: "application/geo+json" } });
+  const stationsRes = await fetchWithTimeout(stationsUrl, { headers: { Accept: "application/geo+json" } }, WEATHER_TIMEOUT_MS);
   if (!stationsRes.ok) throw new Error("NWS stations request failed.");
 
   const stationsData = await stationsRes.json();
   const stationId = stationsData.features?.[0]?.properties?.stationIdentifier;
   if (!stationId) throw new Error("No observation stations found.");
 
-  const obsRes = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`, {
+  const obsRes = await fetchWithTimeout(`https://api.weather.gov/stations/${stationId}/observations/latest`, {
     headers: { Accept: "application/geo+json" },
-  });
+  }, WEATHER_TIMEOUT_MS);
   if (!obsRes.ok) throw new Error("NWS observation request failed.");
 
   const p = (await obsRes.json()).properties;
@@ -47,11 +51,11 @@ export async function getCurrentObservation(lat, lon) {
 }
 
 export async function getHourlyWeather(lat, lon, hoursAhead = 8) {
-  const pointsRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+  const pointsRes = await fetchWithTimeout(`https://api.weather.gov/points/${lat},${lon}`, {
     headers: {
       Accept: "application/geo+json",
     },
-  });
+  }, WEATHER_TIMEOUT_MS);
 
   if (!pointsRes.ok) {
     throw new Error("NWS points lookup failed.");
@@ -63,11 +67,11 @@ export async function getHourlyWeather(lat, lon, hoursAhead = 8) {
     throw new Error("NWS points response missing forecastHourly.");
   }
 
-  const hourlyRes = await fetch(hourlyUrl, {
+  const hourlyRes = await fetchWithTimeout(hourlyUrl, {
     headers: {
       Accept: "application/geo+json",
     },
-  });
+  }, WEATHER_TIMEOUT_MS);
 
   if (!hourlyRes.ok) {
     throw new Error("NWS hourly forecast request failed.");

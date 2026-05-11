@@ -54,6 +54,8 @@ const state = {
   observation: null,
 };
 
+let quickViewRefreshId = null;
+
 function renderState(target, message, isError = false) {
   setHtml(target, `<p class="state ${isError ? "error" : ""}">${escapeHtml(message)}</p>`);
 }
@@ -366,9 +368,11 @@ function renderQuickView(aep, weather, solunar, observation) {
   </div>`;
 
   // Periods
-  const upcoming = today ? getUpcomingSolunarPeriods(today) : [];
+  const upcoming = today && !today.isMissing ? getUpcomingSolunarPeriods(today) : [];
   let periodsHtml;
-  if (upcoming.length) {
+  if (today?.isMissing) {
+    periodsHtml = `<p class="qv-done">Solunar timing unavailable.</p>`;
+  } else if (upcoming.length) {
     periodsHtml = upcoming.map((p) => `<div class="qv-period qv-period--${p.type}">
       <span class="qv-period-name">${escapeHtml(p.label)}</span>
       <span class="qv-period-range">${escapeHtml(p.range)}</span>
@@ -758,6 +762,18 @@ async function getCachedResource(key, loader) {
   return entry.promise;
 }
 
+async function settle(promise) {
+  try {
+    return { status: "fulfilled", value: await promise };
+  } catch (reason) {
+    return { status: "rejected", reason };
+  }
+}
+
+function renderQuickViewFromState() {
+  renderQuickView(state.aep, state.weather, state.solunar, state.observation);
+}
+
 function renderInitialLoadingState() {
   renderState(el.qvContent, "Loading...");
   renderState(el.weatherContent, "Loading...");
@@ -777,73 +793,87 @@ async function loadDashboard() {
   renderInitialLoadingState();
   updateLocationLabels();
 
-  const [staticResults, weatherResult, solunarResult, observationResult] = await Promise.all([
-    Promise.allSettled([
-      getCachedResource("aep", getAepCurrent),
-      getCachedResource("usgs", getUsgsRadfordLatest),
-    ]),
-    getHourlyWeather(LOCATION.lat, LOCATION.lon, 8).then(
-      (value) => ({ status: "fulfilled", value }),
-      (reason) => ({ status: "rejected", reason })
-    ),
-    getSolunarRange(LOCATION.lat, LOCATION.lon, null, 7).then(
-      (value) => ({ status: "fulfilled", value }),
-      (reason) => ({ status: "rejected", reason })
-    ),
-    getCurrentObservation(LOCATION.lat, LOCATION.lon).then(
-      (value) => ({ status: "fulfilled", value }),
-      (reason) => ({ status: "rejected", reason })
-    ),
-  ]);
+  const staticTask = Promise.allSettled([
+    getCachedResource("aep", getAepCurrent),
+    getCachedResource("usgs", getUsgsRadfordLatest),
+  ]).then((staticResults) => {
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
 
-  if (!isActiveRequest(loadId)) {
-    return;
+    const [aepResult, usgsResult] = staticResults;
+
+    if (aepResult.status === "fulfilled") {
+      state.aep = aepResult.value;
+      renderAep(aepResult.value);
+    } else {
+      setHtml(
+        el.aepContent,
+        `<p class="state error">AEP error: ${escapeHtml(
+          aepResult.reason.message
+        )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
+      );
+    }
+
+    if (usgsResult.status === "fulfilled") {
+      state.usgs = usgsResult.value;
+      renderUsgs(usgsResult.value);
+    } else {
+      renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
+    }
+
+    renderQuickViewFromState();
+  });
+
+  const observationTask = settle(getCurrentObservation(LOCATION.lat, LOCATION.lon)).then((result) => {
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
+
+    if (result.status === "fulfilled") {
+      state.observation = result.value;
+      if (state.weather) {
+        renderWeather(state.weather, state.observation);
+      }
+      renderQuickViewFromState();
+    }
+  });
+
+  const weatherTask = settle(getHourlyWeather(LOCATION.lat, LOCATION.lon, 8)).then((result) => {
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
+
+    if (result.status === "fulfilled") {
+      state.weather = result.value;
+      renderWeather(result.value, state.observation);
+    } else {
+      renderState(el.weatherContent, `Weather error: ${result.reason.message}`, true);
+    }
+
+    renderQuickViewFromState();
+  });
+
+  const solunarTask = settle(getSolunarRange(LOCATION.lat, LOCATION.lon, null, 7)).then((result) => {
+    if (!isActiveRequest(loadId)) {
+      return;
+    }
+
+    if (result.status === "fulfilled") {
+      state.solunar = result.value;
+      renderSolunar(result.value);
+    } else {
+      renderState(el.solunarContent, `Solunar error: ${result.reason.message}`, true);
+    }
+
+    renderQuickViewFromState();
+  });
+
+  await Promise.allSettled([staticTask, observationTask, weatherTask, solunarTask]);
+
+  if (isActiveRequest(loadId) && !quickViewRefreshId) {
+    quickViewRefreshId = setInterval(renderQuickViewFromState, 60000);
   }
-
-  const [aepResult, usgsResult] = staticResults;
-
-  if (aepResult.status === "fulfilled") {
-    state.aep = aepResult.value;
-    renderAep(aepResult.value);
-  } else {
-    setHtml(
-      el.aepContent,
-      `<p class="state error">AEP error: ${escapeHtml(
-        aepResult.reason.message
-      )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
-    );
-  }
-
-  if (usgsResult.status === "fulfilled") {
-    state.usgs = usgsResult.value;
-    renderUsgs(usgsResult.value);
-  } else {
-    renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
-  }
-
-  if (observationResult.status === "fulfilled") {
-    state.observation = observationResult.value;
-  }
-
-  if (weatherResult.status === "fulfilled") {
-    state.weather = weatherResult.value;
-    renderWeather(weatherResult.value, state.observation);
-  } else {
-    renderState(el.weatherContent, `Weather error: ${weatherResult.reason.message}`, true);
-  }
-
-  if (solunarResult.status === "fulfilled") {
-    state.solunar = solunarResult.value;
-    renderSolunar(solunarResult.value);
-  } else {
-    renderState(el.solunarContent, `Solunar error: ${solunarResult.reason.message}`, true);
-  }
-
-  renderQuickView(state.aep, state.weather, state.solunar, state.observation);
-
-  setInterval(() => {
-    if (state.solunar) renderQuickView(state.aep, state.weather, state.solunar, state.observation);
-  }, 60000);
 }
 
 function onSolunarToggle(event) {

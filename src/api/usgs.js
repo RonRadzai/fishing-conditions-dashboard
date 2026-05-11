@@ -1,5 +1,8 @@
+import { fetchWithTimeout } from "../utils.js";
+
 const USGS_URL =
   "https://api.waterdata.usgs.gov/ogcapi/v0/collections/latest-continuous/items?f=json&monitoring_location_id=USGS-03171000&parameter_code=00060,00065";
+const USGS_TIMEOUT_MS = 8000;
 
 function pluckValueByCode(features, code) {
   const match = features.find((f) => {
@@ -25,11 +28,11 @@ function pluckValueByCode(features, code) {
 }
 
 export async function getUsgsRadfordLatest() {
-  const response = await fetch(USGS_URL, {
+  const response = await fetchWithTimeout(USGS_URL, {
     headers: {
       Accept: "application/geo+json",
     },
-  });
+  }, USGS_TIMEOUT_MS);
 
   if (!response.ok) {
     throw new Error("USGS request failed.");

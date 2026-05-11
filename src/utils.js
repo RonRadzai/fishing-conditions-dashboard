@@ -195,6 +195,28 @@ export function setHtml(el, html) {
   el.innerHTML = html;
 }
 
+export async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  let timeoutId;
+  const signal = options.signal ?? controller?.signal;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      controller?.abort();
+      reject(new Error(`Request timed out after ${timeoutMs}ms.`));
+    }, timeoutMs);
+  });
+
+  try {
+    const request = fetch(url, {
+      ...options,
+      signal,
+    });
+    return await Promise.race([request, timeout]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 export function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")

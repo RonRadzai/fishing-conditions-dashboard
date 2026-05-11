@@ -1,5 +1,6 @@
 import {
   buildSolunarDates,
+  fetchWithTimeout,
   getApproximateMoonPhaseName,
   getEasternTzInteger,
   getMoonPhaseTypeFromText,
@@ -7,6 +8,7 @@ import {
 } from "../utils.js";
 
 const MINUTES_PER_DAY = 24 * 60;
+const SOLUNAR_TIMEOUT_MS = 5000;
 
 function parseClockTimeToMinutes(timeText) {
   if (!timeText || timeText === "N/A") {
@@ -156,7 +158,7 @@ function createDateFromYmd(yyyymmdd) {
 
 export async function getSolunarForDate(lat, lon, yyyymmdd, tz) {
   const endpoint = `https://api.solunar.org/solunar/${lat},${lon},${yyyymmdd},${tz}`;
-  const response = await fetch(endpoint);
+  const response = await fetchWithTimeout(endpoint, {}, SOLUNAR_TIMEOUT_MS);
   if (!response.ok) {
     throw new Error(`Solunar request failed for ${yyyymmdd}.`);
   }
