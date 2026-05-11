@@ -83,30 +83,42 @@ function fmtRange(startMinutes, endMinutes) {
   return `${formatClockMinutes(startMinutes)} - ${formatClockMinutes(endMinutes)}`;
 }
 
-function computePeriods(moonRiseText, moonSetText) {
-  const moonRise = parseClockTimeToMinutes(moonRiseText);
-  const moonSetRaw = parseClockTimeToMinutes(moonSetText);
-  if (moonRise === null || moonSetRaw === null) {
-    return {
-      major1: "N/A",
-      major2: "N/A",
-      minor1: "N/A",
-      minor2: "N/A",
-    };
+function dateToLocalMinutes(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return null;
   }
 
-  const moonSet = moonSetRaw <= moonRise ? moonSetRaw + MINUTES_PER_DAY : moonSetRaw;
-  const nextMoonRise = moonRise + MINUTES_PER_DAY;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value);
 
-  const majorCenter1 = (moonRise + moonSet) / 2;
-  const majorCenter2 = (moonSet + nextMoonRise) / 2;
+  return Number.isFinite(hour) && Number.isFinite(minute) ? hour * 60 + minute : null;
+}
+
+function formatPeriodAround(date, durationMinutes) {
+  const center = dateToLocalMinutes(date);
+  if (center === null) {
+    return null;
+  }
+  const halfDuration = durationMinutes / 2;
+  const start = center - halfDuration;
 
   return {
-    major1: fmtRange(majorCenter1 - 60, majorCenter1 + 60),
-    major2: fmtRange(majorCenter2 - 60, majorCenter2 + 60),
-    minor1: fmtRange(moonRise - 30, moonRise + 30),
-    minor2: fmtRange(moonSet - 30, moonSet + 30),
+    range: fmtRange(start, center + halfDuration),
+    start,
   };
+}
+
+function sortPeriodsByStart(periods) {
+  return periods
+    .filter((period) => period && period.start >= 0 && period.start < MINUTES_PER_DAY)
+    .sort((a, b) => a.start - b.start)
+    .map(({ range }) => range);
 }
 
 function getMoonPhaseFields(yyyymmdd) {
@@ -116,6 +128,24 @@ function getMoonPhaseFields(yyyymmdd) {
     moonPhase: trackedPhase?.label ?? getApproximateMoonPhaseName(yyyymmdd),
     moonPhaseType: trackedPhase?.type ?? null,
     moonPhaseEventTime: trackedPhase ? trackedPhase.date.toISOString() : null,
+  };
+}
+
+function computePeriodsFromEvents(moonTimes, extrema) {
+  const majors = sortPeriodsByStart([
+    extrema.under ? formatPeriodAround(extrema.under, 120) : null,
+    extrema.over ? formatPeriodAround(extrema.over, 120) : null,
+  ]);
+  const minors = sortPeriodsByStart([
+    moonTimes.rise ? formatPeriodAround(moonTimes.rise, 60) : null,
+    moonTimes.set ? formatPeriodAround(moonTimes.set, 60) : null,
+  ]);
+
+  return {
+    major1: majors[0] ?? "N/A",
+    major2: majors[1] ?? "N/A",
+    minor1: minors[0] ?? "N/A",
+    minor2: minors[1] ?? "N/A",
   };
 }
 
@@ -264,6 +294,88 @@ function getMoonTimes(localMidnightUtc, lat, lon) {
   };
 }
 
+function refineMoonExtremum(localMidnightUtc, lat, lon, centerHour, compare) {
+  let left = Math.max(0, centerHour - 1);
+  let right = Math.min(24, centerHour + 1);
+
+  for (let i = 0; i < 24; i += 1) {
+    const leftThird = left + (right - left) / 3;
+    const rightThird = right - (right - left) / 3;
+    const leftAltitude = getMoonAltitude(hoursLater(localMidnightUtc, leftThird), lat, lon);
+    const rightAltitude = getMoonAltitude(hoursLater(localMidnightUtc, rightThird), lat, lon);
+
+    if (compare(leftAltitude, rightAltitude)) {
+      right = rightThird;
+    } else {
+      left = leftThird;
+    }
+  }
+
+  return hoursLater(localMidnightUtc, (left + right) / 2);
+}
+
+function getMoonExtrema(localMidnightUtc, lat, lon) {
+  const samples = [];
+  for (let hour = 0; hour <= 24; hour += 1) {
+    samples.push({
+      hour,
+      altitude: getMoonAltitude(hoursLater(localMidnightUtc, hour), lat, lon),
+    });
+  }
+
+  const overCandidates = [];
+  const underCandidates = [];
+
+  function addCandidate(candidates, date) {
+    const hour = (date.getTime() - localMidnightUtc.getTime()) / MS_PER_HOUR;
+    if (hour >= 0 && hour < 24) {
+      candidates.push({
+        date,
+        altitude: getMoonAltitude(date, lat, lon),
+      });
+    }
+  }
+
+  if (samples[0].altitude >= samples[1].altitude) {
+    addCandidate(overCandidates, refineMoonExtremum(localMidnightUtc, lat, lon, 0, (a, b) => a > b));
+  }
+  if (samples[0].altitude <= samples[1].altitude) {
+    addCandidate(underCandidates, refineMoonExtremum(localMidnightUtc, lat, lon, 0, (a, b) => a < b));
+  }
+
+  for (let i = 1; i < samples.length - 1; i += 1) {
+    const previous = samples[i - 1].altitude;
+    const current = samples[i].altitude;
+    const next = samples[i + 1].altitude;
+
+    if (current >= previous && current >= next) {
+      addCandidate(
+        overCandidates,
+        refineMoonExtremum(localMidnightUtc, lat, lon, samples[i].hour, (a, b) => a > b)
+      );
+    }
+
+    if (current <= previous && current <= next) {
+      addCandidate(
+        underCandidates,
+        refineMoonExtremum(localMidnightUtc, lat, lon, samples[i].hour, (a, b) => a < b)
+      );
+    }
+  }
+
+  if (samples[24].altitude >= samples[23].altitude) {
+    addCandidate(overCandidates, refineMoonExtremum(localMidnightUtc, lat, lon, 24, (a, b) => a > b));
+  }
+  if (samples[24].altitude <= samples[23].altitude) {
+    addCandidate(underCandidates, refineMoonExtremum(localMidnightUtc, lat, lon, 24, (a, b) => a < b));
+  }
+
+  const over = overCandidates.sort((a, b) => b.altitude - a.altitude)[0]?.date ?? null;
+  const under = underCandidates.sort((a, b) => a.altitude - b.altitude)[0]?.date ?? null;
+
+  return { over, under };
+}
+
 function julianCycle(days, longitudeWest) {
   return Math.round(days - 0.0009 - longitudeWest / (2 * Math.PI));
 }
@@ -328,9 +440,10 @@ function calculateSolunar(lat, lon, yyyymmdd) {
   const { midnight, noon } = getLocalDateBase(yyyymmdd);
   const sun = getSunTimes(noon, lat, lon);
   const moon = getMoonTimes(midnight, lat, lon);
+  const extrema = getMoonExtrema(midnight, lat, lon);
   const moonrise = moon.rise ? formatClockDate(moon.rise) : "N/A";
   const moonset = moon.set ? formatClockDate(moon.set) : "N/A";
-  const computed = computePeriods(moonrise, moonset);
+  const computed = computePeriodsFromEvents(moon, extrema);
   const moonPhase = getMoonPhaseFields(yyyymmdd);
 
   return {
