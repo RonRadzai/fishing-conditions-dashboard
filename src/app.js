@@ -854,7 +854,7 @@ async function loadDashboard() {
     renderQuickViewFromState();
   });
 
-  const solunarTask = settle(getSolunarRange(LOCATION.lat, LOCATION.lon, null, 7)).then((result) => {
+  const solunarTask = settle(getSolunarRange(LOCATION.lat, LOCATION.lon, 7)).then((result) => {
     if (!isActiveRequest(loadId)) {
       return;
     }

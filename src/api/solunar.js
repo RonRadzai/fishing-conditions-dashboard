@@ -22,36 +22,6 @@ const asin = Math.asin;
 const atan2 = Math.atan2;
 const acos = Math.acos;
 
-function parseClockTimeToMinutes(timeText) {
-  if (!timeText || timeText === "N/A") {
-    return null;
-  }
-
-  const match = String(timeText)
-    .trim()
-    .match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?$/i);
-  if (!match) {
-    return null;
-  }
-
-  let hour = Number(match[1]);
-  const minute = Number(match[2]);
-  const meridiem = match[3] ? match[3].toUpperCase() : null;
-
-  if (meridiem) {
-    hour %= 12;
-    if (meridiem === "PM") {
-      hour += 12;
-    }
-  }
-
-  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-    return null;
-  }
-
-  return hour * 60 + minute;
-}
-
 function formatClockMinutes(minutes) {
   const normalized = ((Math.round(minutes) % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
   const hour24 = Math.floor(normalized / 60);
@@ -468,22 +438,11 @@ function createDateFromYmd(yyyymmdd) {
   return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
 }
 
-export async function getSolunarForDate(lat, lon, yyyymmdd, tz) {
-  return calculateSolunar(lat, lon, yyyymmdd, tz);
-}
-
-export async function getSolunarRange(lat, lon, _tz, days = 7) {
+export async function getSolunarRange(lat, lon, days = 7) {
   const dates = buildSolunarDates(days);
-  const results = await Promise.all(dates.map((date) => getSolunarForDate(
-    lat,
-    lon,
-    date,
-    getEasternTzInteger(createDateFromYmd(date))
-  )));
-
   return {
     startDate: dates[0],
-    days: results,
+    days: dates.map((date) => calculateSolunar(lat, lon, date)),
     missingDates: [],
   };
 }
