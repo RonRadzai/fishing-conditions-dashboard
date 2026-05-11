@@ -284,14 +284,12 @@ export function getTrackedMoonPhaseForDate(yyyymmdd, timeZone = EASTERN_TIMEZONE
 }
 
 export function getApproximateMoonPhaseName(yyyymmdd) {
-  const phaseFraction = getMoonPhaseFractionForDate(yyyymmdd);
+  const fraction = getMoonPhaseFractionForDate(yyyymmdd);
 
-  if (phaseFraction < 0.0625 || phaseFraction >= 0.9375) return "New Moon";
-  if (phaseFraction < 0.1875) return "Waxing Crescent";
-  if (phaseFraction < 0.3125) return "First Quarter";
-  if (phaseFraction < 0.4375) return "Waxing Gibbous";
-  if (phaseFraction < 0.5625) return "Full Moon";
-  if (phaseFraction < 0.6875) return "Waning Gibbous";
-  if (phaseFraction < 0.8125) return "Last Quarter";
+  if (fraction < 0.1875) return "Waxing Crescent";
+  if (fraction < 0.3125) return "First Quarter";
+  if (fraction < 0.5) return "Waxing Gibbous";
+  if (fraction < 0.6875) return "Waning Gibbous";
+  if (fraction < 0.8125) return "Last Quarter";
   return "Waning Crescent";
 }
