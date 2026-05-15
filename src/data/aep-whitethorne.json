@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-05-15T22:43:50Z",
-  "lastUpdated": "2026-05-15T18:30:00",
-  "currentDateTime": 1778885030410,
+  "generatedAt": "2026-05-15T23:44:44Z",
+  "lastUpdated": "2026-05-15T19:30:00",
+  "currentDateTime": 1778888684567,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 164,
+  "currentFlowCfs": 44,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1778885030410,
-      "flowCfs": 164
+      "timestamp": 1778888684567,
+      "flowCfs": 44
     },
     {
       "label": "+1h",
-      "timestamp": 1778888700000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1778892300000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1778895900000,
+      "flowCfs": 10
+    },
+    {
       "label": "+4h",
-      "timestamp": 1778899500000,
+      "timestamp": 1778903100000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1778913000000,
-      "flowCfs": 2007
+      "timestamp": 1778916600000,
+      "flowCfs": 2006
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1778826600000,
-      "flowCfs": 2009
-    },
-    {
-      "timestamp": 1778827500000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778828400000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778829300000,
-      "flowCfs": 2007
-    },
     {
       "timestamp": 1778830200000,
       "flowCfs": 2008
@@ -422,6 +406,22 @@
     {
       "timestamp": 1778913000000,
       "flowCfs": 2007
+    },
+    {
+      "timestamp": 1778913900000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1778914800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1778915700000,
+      "flowCfs": 2007
+    },
+    {
+      "timestamp": 1778916600000,
+      "flowCfs": 2006
     }
   ]
 }
