@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-05-16T10:42:57Z",
-  "lastUpdated": "2026-05-16T06:30:00",
-  "currentDateTime": 1778928037813,
+  "generatedAt": "2026-05-16T11:42:55Z",
+  "lastUpdated": "2026-05-16T07:30:00",
+  "currentDateTime": 1778931774994,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 590,
+  "currentFlowCfs": 287,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1778928037813,
-      "flowCfs": 590
+      "timestamp": 1778931774994,
+      "flowCfs": 287
     },
     {
       "label": "+1h",
-      "timestamp": 1778931900000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1778935500000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1778939100000,
+      "flowCfs": 10
+    },
+    {
       "label": "+4h",
-      "timestamp": 1778942700000,
+      "timestamp": 1778946300000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1778956200000,
-      "flowCfs": 4940
+      "timestamp": 1778959800000,
+      "flowCfs": 4941
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1778869800000,
-      "flowCfs": 1997
-    },
-    {
-      "timestamp": 1778870700000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778871600000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1778872500000,
-      "flowCfs": 2009
-    },
     {
       "timestamp": 1778873400000,
       "flowCfs": 1996
@@ -422,6 +406,22 @@
     {
       "timestamp": 1778956200000,
       "flowCfs": 4940
+    },
+    {
+      "timestamp": 1778957100000,
+      "flowCfs": 4919
+    },
+    {
+      "timestamp": 1778958000000,
+      "flowCfs": 4923
+    },
+    {
+      "timestamp": 1778958900000,
+      "flowCfs": 4913
+    },
+    {
+      "timestamp": 1778959800000,
+      "flowCfs": 4941
     }
   ]
 }
