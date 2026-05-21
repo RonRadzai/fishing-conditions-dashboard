@@ -2,63 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-05-21T22:11:10Z",
-  "lastUpdated": "2026-05-21T18:00:00",
-  "currentDateTime": 1779401470586,
+  "generatedAt": "2026-05-21T23:31:58Z",
+  "lastUpdated": "2026-05-21T19:30:00",
+  "currentDateTime": 1779406318109,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 1450,
+  "currentFlowCfs": 698,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1779401470586,
-      "flowCfs": 1450
+      "timestamp": 1779406318109,
+      "flowCfs": 698
     },
     {
       "label": "+1h",
-      "timestamp": 1779405300000,
-      "flowCfs": 1945
+      "timestamp": 1779409800000,
+      "flowCfs": 801
     },
     {
       "label": "+2h",
-      "timestamp": 1779408900000,
-      "flowCfs": 1960
+      "timestamp": 1779413400000,
+      "flowCfs": 885
     },
     {
       "label": "+4h",
-      "timestamp": 1779416100000,
-      "flowCfs": 1954
+      "timestamp": 1779420600000,
+      "flowCfs": 801
     },
     {
       "label": "+8h",
-      "timestamp": 1779429600000,
-      "flowCfs": 10
+      "timestamp": 1779435000000,
+      "flowCfs": 1951
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1779343200000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1779344100000,
-      "flowCfs": 1936
-    },
-    {
-      "timestamp": 1779345000000,
-      "flowCfs": 1332
-    },
-    {
-      "timestamp": 1779345900000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1779346800000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1779347700000,
-      "flowCfs": 1956
-    },
     {
       "timestamp": 1779348600000,
       "flowCfs": 1349
@@ -422,6 +398,30 @@
     {
       "timestamp": 1779429600000,
       "flowCfs": 10
+    },
+    {
+      "timestamp": 1779430500000,
+      "flowCfs": 1945
+    },
+    {
+      "timestamp": 1779431400000,
+      "flowCfs": 1951
+    },
+    {
+      "timestamp": 1779432300000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1779433200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1779434100000,
+      "flowCfs": 1959
+    },
+    {
+      "timestamp": 1779435000000,
+      "flowCfs": 1951
     }
   ]
 }
