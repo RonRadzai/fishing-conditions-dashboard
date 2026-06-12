@@ -749,6 +749,20 @@ a {
 .qv-sun-label { font-weight: 500; }
 .qv-sun-times { font-family: "IBM Plex Mono", Consolas, monospace; }
 
+.usgs-section {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.usgs-section .section-label {
+  margin-bottom: 0.6rem;
+}
+
+.usgs-section .content-block {
+  min-height: 0;
+}
+
 /* Flow forecast graph */
 .flow-graph { margin-bottom: 1rem; }
 .flow-graph .section-label { margin-bottom: 0.5rem; display: flex; align-items: baseline; gap: 0.4rem; }
