@@ -755,10 +755,15 @@ a {
 .graph-unit { font-size: 0.72rem; font-weight: 600; color: var(--muted-soft); text-transform: none; letter-spacing: 0; }
 .forecast-chart { display: block; width: 100%; height: auto; }
 .graph-axis { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--muted-soft); }
-.graph-value { font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 700; fill: var(--ink); }
 .graph-grid { stroke: #2d5a4a; stroke-width: 0.8; opacity: 0.15; }
-.flow-bar { fill: rgba(30, 121, 102, 0.55); }
-.flow-bar-now { fill: var(--accent); }
+.graph-caption { margin: 0.4rem 0 0; font-size: 0.74rem; color: var(--muted-soft); }
+.flow-area-past { fill: rgba(29, 95, 162, 0.1); }
+.flow-line-past { fill: none; stroke: rgba(29, 95, 162, 0.32); stroke-width: 1.4; }
+.flow-area-future { fill: rgba(29, 95, 162, 0.26); }
+.flow-line-future { fill: none; stroke: var(--accent-2); stroke-width: 1.8; }
+.flow-dot { fill: var(--accent-2); }
+.flow-now-line { stroke: #5b7286; stroke-width: 1; stroke-dasharray: 3 3; }
+.flow-now-label { font-family: "IBM Plex Mono", monospace; font-size: 10px; font-weight: 700; fill: var(--ink); }
 
 @media (min-width: 760px) {
   .solunar-today-grid {
