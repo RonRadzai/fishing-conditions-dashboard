@@ -356,10 +356,13 @@ function formatGraphHour(date) {
   return new Intl.DateTimeFormat("en-US", { hour: "numeric", timeZone: EASTERN_TIMEZONE }).format(date);
 }
 
-const FLOW_GRAPH_PAST_WINDOW_MS = 6 * 3600000;
+const FLOW_GRAPH_INITIAL_PAST_MS = 2 * 3600000;
+const FLOW_GRAPH_PX_PER_HOUR = 60;
 
 // Line graph of the dam-release pulse train (like aep.com's chart):
+// the full series at a fixed hourly scale inside a horizontal scroller,
 // past flows light, forecast dark, dashed marker at the current time.
+// The y-axis lives in a separate svg so it stays put while scrolling.
 function renderFlowGraph(aep) {
   const allPoints = (aep.forecastPoints ?? []).filter(
     (p) => Number.isFinite(p?.timestamp) && Number.isFinite(p?.flowCfs)
@@ -368,44 +371,39 @@ function renderFlowGraph(aep) {
 
   const firstTs = allPoints[0].timestamp;
   const lastTs = allPoints[allPoints.length - 1].timestamp;
+  if (lastTs <= firstTs) return "";
   const now = Math.min(Math.max(Date.now(), firstTs), lastTs);
-  const domainStart = Math.max(firstTs, now - FLOW_GRAPH_PAST_WINDOW_MS);
-  const domainEnd = lastTs;
-  if (domainEnd <= domainStart) return "";
 
-  const series = [
-    { timestamp: domainStart, flowCfs: interpolateFlowAt(allPoints, domainStart) },
-    ...allPoints.filter((p) => p.timestamp > domainStart && p.timestamp <= domainEnd),
-  ];
   const nowPoint = { timestamp: now, flowCfs: interpolateFlowAt(allPoints, now) };
-  const past = series.filter((p) => p.timestamp < now).concat(nowPoint);
-  const future = [nowPoint, ...series.filter((p) => p.timestamp > now)];
+  const past = allPoints.filter((p) => p.timestamp < now).concat(nowPoint);
+  const future = [nowPoint, ...allPoints.filter((p) => p.timestamp > now)];
 
-  const W = 480, H = 190;
-  const padL = 34, padR = 10, padT = 18, padB = 22;
-  const plotW = W - padL - padR;
+  const hourMs = 3600000;
+  const H = 190;
+  const axisW = 30;
+  const padL = 4, padR = 10, padT = 18, padB = 22;
   const plotH = H - padT - padB;
   const baseY = padT + plotH;
-  const yMax = Math.max(1000, Math.ceil(Math.max(...series.map((p) => p.flowCfs)) / 1000) * 1000);
-  const xOf = (t) => padL + ((t - domainStart) / (domainEnd - domainStart)) * plotW;
+  const svgW = Math.ceil(padL + ((lastTs - firstTs) / hourMs) * FLOW_GRAPH_PX_PER_HOUR + padR);
+  const yMax = Math.max(1000, Math.ceil(Math.max(...allPoints.map((p) => p.flowCfs)) / 1000) * 1000);
+  const xOf = (t) => padL + ((t - firstTs) / hourMs) * FLOW_GRAPH_PX_PER_HOUR;
   const yOf = (f) => baseY - (f / yMax) * plotH;
   const lineOf = (pts) =>
     pts.map((p, i) => `${i ? "L" : "M"}${xOf(p.timestamp).toFixed(1)},${yOf(p.flowCfs).toFixed(1)}`).join(" ");
   const areaOf = (pts) =>
     `${lineOf(pts)} L${xOf(pts[pts.length - 1].timestamp).toFixed(1)},${baseY} L${xOf(pts[0].timestamp).toFixed(1)},${baseY} Z`;
 
+  let axisHtml = "";
   let gridHtml = "";
   for (let v = 0; v <= yMax; v += 1000) {
-    const y = yOf(v).toFixed(1);
-    gridHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" class="graph-grid"/>`
-      + `<text x="${padL - 6}" y="${(yOf(v) + 3.5).toFixed(1)}" text-anchor="end" class="graph-axis">${v === 0 ? "0" : `${v / 1000}k`}</text>`;
+    const y = yOf(v);
+    gridHtml += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${svgW - padR}" y2="${y.toFixed(1)}" class="graph-grid"/>`;
+    axisHtml += `<text x="${axisW - 6}" y="${(y + 3.5).toFixed(1)}" text-anchor="end" class="graph-axis">${v === 0 ? "0" : `${v / 1000}k`}</text>`;
   }
 
   // ET offsets are whole hours, so UTC hour boundaries align with ET clock hours.
-  const hourMs = 3600000;
-  const hourStep = Math.max(1, Math.ceil((domainEnd - domainStart) / hourMs / 6)) * hourMs;
   let ticksHtml = "";
-  for (let t = Math.ceil(domainStart / hourMs) * hourMs; t <= domainEnd; t += hourStep) {
+  for (let t = Math.ceil(firstTs / hourMs) * hourMs; t <= lastTs; t += hourMs) {
     ticksHtml += `<text x="${xOf(t).toFixed(1)}" y="${(baseY + 14).toFixed(1)}" text-anchor="middle" class="graph-axis">${escapeHtml(formatGraphHour(new Date(t)))}</text>`;
   }
 
@@ -421,20 +419,27 @@ function renderFlowGraph(aep) {
     : "";
 
   const nowX = xOf(now);
-  const nowLabelX = Math.min(Math.max(nowX, padL + 28), W - padR - 28);
+  const nowLabelX = Math.min(Math.max(nowX, padL + 28), svgW - padR - 28);
   const nowHtml = `<line x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${baseY}" class="flow-now-line"/>`
     + `<text x="${nowLabelX.toFixed(1)}" y="${(padT - 6).toFixed(1)}" text-anchor="middle" class="flow-now-label">${escapeHtml(formatUsHour(new Date(now)))}</text>`;
 
+  const initialScrollX = Math.max(0, Math.round(xOf(now - FLOW_GRAPH_INITIAL_PAST_MS) - padL));
+
   return `<div class="flow-graph">
   <p class="section-label">Whitethorne Flow <span class="graph-unit">cfs</span></p>
-  <svg viewBox="0 0 ${W} ${H}" class="forecast-chart" role="img" aria-label="River flow at Whitethorne Launch, past and forecast">
-    ${gridHtml}
-    ${pastHtml}
-    ${futureHtml}
-    ${nowHtml}
-    ${ticksHtml}
-  </svg>
-  <p class="graph-caption">Past flows light blue · forecast dark blue</p>
+  <div class="flow-graph-body">
+    <svg class="flow-yaxis" width="${axisW}" height="${H}" viewBox="0 0 ${axisW} ${H}" aria-hidden="true">${axisHtml}</svg>
+    <div class="flow-scroll" data-initial-x="${initialScrollX}">
+      <svg width="${svgW}" height="${H}" viewBox="0 0 ${svgW} ${H}" class="forecast-chart" role="img" aria-label="River flow at Whitethorne Launch, past and forecast">
+        ${gridHtml}
+        ${pastHtml}
+        ${futureHtml}
+        ${nowHtml}
+        ${ticksHtml}
+      </svg>
+    </div>
+  </div>
+  <p class="graph-caption">Past flows light blue · forecast dark blue · scroll for earlier and later</p>
 </div>`;
 }
 
@@ -530,6 +535,11 @@ function renderAep(aep) {
     ${flowGraph}
     <p class="card-meta">Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne Launch</a>${generatedAt ? ` | Synced ${escapeHtml(generatedAt)} ET` : ""}${currentAsOf ? ` | As of ${escapeHtml(currentAsOf)} ET` : ""}${aep.stale ? " | Data may be stale" : ""}</p>`
   );
+
+  const scroller = el.aepContent.querySelector(".flow-scroll");
+  if (scroller) {
+    scroller.scrollLeft = Number(scroller.dataset.initialX) || 0;
+  }
 }
 
 function renderUsgs(usgs) {
