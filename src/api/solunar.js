@@ -1,11 +1,11 @@
 import {
   buildSolunarDates,
+  createStableDateFromYmd,
   getApproximateMoonPhaseName,
   getEasternTzInteger,
   getTrackedMoonPhaseForDate,
 } from "../utils.js";
 
-const MINUTES_PER_DAY = 24 * 60;
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 const RAD = Math.PI / 180;
@@ -21,15 +21,6 @@ const tan = Math.tan;
 const asin = Math.asin;
 const atan2 = Math.atan2;
 const acos = Math.acos;
-
-function formatClockMinutes(minutes) {
-  const normalized = ((Math.round(minutes) % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
-  const hour24 = Math.floor(normalized / 60);
-  const minute = normalized % 60;
-  const meridiem = hour24 >= 12 ? "PM" : "AM";
-  const hour12 = hour24 % 12 || 12;
-  return `${hour12}:${String(minute).padStart(2, "0")} ${meridiem}`;
-}
 
 function formatClockDate(date) {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
@@ -49,46 +40,20 @@ function formatClockDate(date) {
   return `${hour}:${minute} ${dayPeriod}`.trim();
 }
 
-function fmtRange(startMinutes, endMinutes) {
-  return `${formatClockMinutes(startMinutes)} - ${formatClockMinutes(endMinutes)}`;
-}
-
-function dateToLocalMinutes(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+function buildPeriod(type, centerDate, durationMinutes) {
+  if (!(centerDate instanceof Date) || Number.isNaN(centerDate.getTime())) {
     return null;
   }
-
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-  const hour = Number(parts.find((part) => part.type === "hour")?.value);
-  const minute = Number(parts.find((part) => part.type === "minute")?.value);
-
-  return Number.isFinite(hour) && Number.isFinite(minute) ? hour * 60 + minute : null;
-}
-
-function formatPeriodAround(date, durationMinutes) {
-  const center = dateToLocalMinutes(date);
-  if (center === null) {
-    return null;
-  }
-  const halfDuration = durationMinutes / 2;
-  const start = center - halfDuration;
+  const halfMs = (durationMinutes / 2) * 60 * 1000;
+  const start = centerDate.getTime() - halfMs;
+  const end = centerDate.getTime() + halfMs;
 
   return {
-    range: fmtRange(start, center + halfDuration),
+    type,
     start,
+    end,
+    range: `${formatClockDate(new Date(start))} - ${formatClockDate(new Date(end))}`,
   };
-}
-
-function sortPeriodsByStart(periods) {
-  return periods
-    .filter((period) => period && period.start >= 0 && period.start < MINUTES_PER_DAY)
-    .sort((a, b) => a.start - b.start)
-    .map(({ range }) => range);
 }
 
 function getMoonPhaseFields(yyyymmdd) {
@@ -102,20 +67,23 @@ function getMoonPhaseFields(yyyymmdd) {
 }
 
 function computePeriodsFromEvents(moonTimes, extrema) {
-  const majors = sortPeriodsByStart([
-    extrema.under ? formatPeriodAround(extrema.under, 120) : null,
-    extrema.over ? formatPeriodAround(extrema.over, 120) : null,
-  ]);
-  const minors = sortPeriodsByStart([
-    moonTimes.rise ? formatPeriodAround(moonTimes.rise, 60) : null,
-    moonTimes.set ? formatPeriodAround(moonTimes.set, 60) : null,
-  ]);
+  const majors = [extrema.under, extrema.over]
+    .map((date) => buildPeriod("major", date, 120))
+    .filter(Boolean)
+    .sort((a, b) => a.start - b.start);
+  const minors = [moonTimes.rise, moonTimes.set]
+    .map((date) => buildPeriod("minor", date, 60))
+    .filter(Boolean)
+    .sort((a, b) => a.start - b.start);
+
+  const withIndex = (list) => list.map((period, i) => ({ ...period, index: i + 1 }));
 
   return {
-    major1: majors[0] ?? "N/A",
-    major2: majors[1] ?? "N/A",
-    minor1: minors[0] ?? "N/A",
-    minor2: minors[1] ?? "N/A",
+    major1: majors[0]?.range ?? "N/A",
+    major2: majors[1]?.range ?? "N/A",
+    minor1: minors[0]?.range ?? "N/A",
+    minor2: minors[1]?.range ?? "N/A",
+    periods: [...withIndex(majors), ...withIndex(minors)].sort((a, b) => a.start - b.start),
   };
 }
 
@@ -397,7 +365,7 @@ function getSunTimes(localNoonUtc, lat, lon) {
 }
 
 function getLocalDateBase(yyyymmdd) {
-  const tz = getEasternTzInteger(createDateFromYmd(yyyymmdd));
+  const tz = getEasternTzInteger(createStableDateFromYmd(yyyymmdd));
   const year = Number(yyyymmdd.slice(0, 4));
   const month = Number(yyyymmdd.slice(4, 6));
   const day = Number(yyyymmdd.slice(6, 8));
@@ -427,15 +395,9 @@ function calculateSolunar(lat, lon, yyyymmdd) {
     major2: computed.major2,
     minor1: computed.minor1,
     minor2: computed.minor2,
+    periods: computed.periods,
     isMissing: false,
   };
-}
-
-function createDateFromYmd(yyyymmdd) {
-  const year = Number(yyyymmdd.slice(0, 4));
-  const month = Number(yyyymmdd.slice(4, 6));
-  const day = Number(yyyymmdd.slice(6, 8));
-  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
 }
 
 export async function getSolunarRange(lat, lon, days = 7) {

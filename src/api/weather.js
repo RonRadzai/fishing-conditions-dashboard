@@ -2,13 +2,31 @@ import { fetchWithTimeout } from "../utils.js";
 
 const WEATHER_TIMEOUT_MS = 8000;
 
-export async function getCurrentObservation(lat, lon) {
-  const pointsRes = await fetchWithTimeout(`https://api.weather.gov/points/${lat},${lon}`, {
-    headers: { Accept: "application/geo+json" },
-  }, WEATHER_TIMEOUT_MS);
-  if (!pointsRes.ok) throw new Error("NWS points lookup failed.");
+let pointsCacheKey = null;
+let pointsCachePromise = null;
 
-  const pointsData = await pointsRes.json();
+// Both exports need the same NWS points lookup; share one in-flight request.
+function getPointsData(lat, lon) {
+  const key = `${lat},${lon}`;
+  if (!pointsCachePromise || pointsCacheKey !== key) {
+    pointsCacheKey = key;
+    pointsCachePromise = fetchWithTimeout(`https://api.weather.gov/points/${lat},${lon}`, {
+      headers: { Accept: "application/geo+json" },
+    }, WEATHER_TIMEOUT_MS).then((res) => {
+      if (!res.ok) throw new Error("NWS points lookup failed.");
+      return res.json();
+    });
+    pointsCachePromise.catch(() => {
+      if (pointsCacheKey === key) {
+        pointsCachePromise = null;
+      }
+    });
+  }
+  return pointsCachePromise;
+}
+
+export async function getCurrentObservation(lat, lon) {
+  const pointsData = await getPointsData(lat, lon);
   const stationsUrl = pointsData.properties?.observationStations;
   if (!stationsUrl) throw new Error("NWS points response missing observationStations.");
 
@@ -51,17 +69,7 @@ export async function getCurrentObservation(lat, lon) {
 }
 
 export async function getHourlyWeather(lat, lon, hoursAhead = 8) {
-  const pointsRes = await fetchWithTimeout(`https://api.weather.gov/points/${lat},${lon}`, {
-    headers: {
-      Accept: "application/geo+json",
-    },
-  }, WEATHER_TIMEOUT_MS);
-
-  if (!pointsRes.ok) {
-    throw new Error("NWS points lookup failed.");
-  }
-
-  const pointsData = await pointsRes.json();
+  const pointsData = await getPointsData(lat, lon);
   const hourlyUrl = pointsData.properties?.forecastHourly;
   if (!hourlyUrl) {
     throw new Error("NWS points response missing forecastHourly.");
@@ -85,10 +93,15 @@ export async function getHourlyWeather(lat, lon, hoursAhead = 8) {
   const now = Date.now();
   const horizon = now + hoursAhead * 3600000;
 
+  // Keep the in-progress hour (endTime > now) so "now" reflects the current period.
   const selected = periods
     .filter((p) => {
-      const ts = Date.parse(p.startTime);
-      return Number.isFinite(ts) && ts >= now && ts <= horizon;
+      const start = Date.parse(p.startTime);
+      if (!Number.isFinite(start) || start > horizon) {
+        return false;
+      }
+      const end = Date.parse(p.endTime);
+      return Number.isFinite(end) ? end > now : start >= now;
     })
     .slice(0, hoursAhead);
 

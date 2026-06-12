@@ -1,7 +1,4 @@
 :root {
-  --bg: #edf5f0;
-  --bg-deep: #d9ebe4;
-  --card: rgba(255, 255, 255, 0.88);
   --card-strong: rgba(255, 255, 255, 0.96);
   --card-border: rgba(255, 255, 255, 0.8);
   --line: rgba(33, 72, 68, 0.12);
@@ -63,15 +60,6 @@ body {
 
 .hero {
   margin-bottom: 1rem;
-}
-
-.section-kicker {
-  margin: 0;
-  color: var(--accent-2);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-  font-size: 0.76rem;
 }
 
 h1 {
@@ -146,11 +134,6 @@ button:hover {
   text-transform: uppercase;
 }
 
-.summary-status.is-fresh {
-  color: #145646;
-  background: rgba(30, 121, 102, 0.12);
-}
-
 .summary-status.is-stale {
   color: #845e12;
   background: rgba(242, 198, 109, 0.2);
@@ -160,10 +143,6 @@ button:hover {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
-}
-
-.wide-card {
-  grid-column: 1 / -1;
 }
 
 .card-title-row {
@@ -193,10 +172,6 @@ h2 {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 700;
-}
-
-.card-section {
-  margin-top: 0.9rem;
 }
 
 .content-block {
@@ -283,10 +258,6 @@ h2 {
   color: var(--accent-2);
   font-family: "IBM Plex Mono", Consolas, monospace;
   font-weight: 600;
-}
-
-.table-detail {
-  color: #274849;
 }
 
 .table-main-value {
@@ -776,7 +747,7 @@ a {
 }
 .qv-sun { font-size: 0.82rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.1rem; }
 .qv-sun-label { font-weight: 500; }
-.qv-sun-times { font-family: var(--font-mono, monospace); }
+.qv-sun-times { font-family: "IBM Plex Mono", Consolas, monospace; }
 
 /* Flow forecast graph */
 .flow-graph { margin-bottom: 1rem; }
@@ -831,11 +802,6 @@ a {
 
   .qv-snapshot {
     grid-template-columns: 1fr;
-  }
-
-  .qv-moon-row {
-    padding-bottom: 0;
-    border-bottom: 0;
   }
 
   .solunar-day-trigger-meta {

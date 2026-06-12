@@ -24,7 +24,7 @@ function getTimeZoneParts(date, timeZone) {
   );
 }
 
-function createStableDateFromYmd(yyyymmdd) {
+export function createStableDateFromYmd(yyyymmdd) {
   const year = Number(yyyymmdd.slice(0, 4));
   const month = Number(yyyymmdd.slice(4, 6));
   const day = Number(yyyymmdd.slice(6, 8));
@@ -239,21 +239,6 @@ export function getMoonPhaseFraction(date) {
 
 export function getMoonPhaseFractionForDate(yyyymmdd) {
   return getMoonPhaseFraction(createStableDateFromYmd(yyyymmdd));
-}
-
-export function getMoonPhaseTypeFromText(phaseText) {
-  const normalized = String(phaseText ?? "")
-    .toLowerCase()
-    .replace(/[^a-z]+/g, " ")
-    .trim();
-
-  if (/\bnew\b/.test(normalized)) {
-    return "new";
-  }
-  if (/\bfull\b/.test(normalized)) {
-    return "full";
-  }
-  return null;
 }
 
 export function getTrackedMoonPhaseForDate(yyyymmdd, timeZone = EASTERN_TIMEZONE) {

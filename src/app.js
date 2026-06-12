@@ -8,9 +8,7 @@ import {
   formatDateLabel,
   formatUsDateTime,
   formatUsHour,
-  getEasternTzInteger,
   getMoonPhaseFractionForDate,
-  getMoonPhaseTypeFromText,
   setHtml,
 } from "./utils.js";
 
@@ -49,7 +47,6 @@ const state = {
   expandedFutureIndex: null,
   solunar: null,
   aep: null,
-  usgs: null,
   weather: null,
   observation: null,
 };
@@ -101,16 +98,7 @@ function renderMoonPhaseIcon(phaseFraction, className = "") {
 }
 
 function isMajorMoonPhaseDay(day) {
-  if (!day) {
-    return false;
-  }
-  if (day.moonPhaseType === "full" || day.moonPhaseType === "new") {
-    return true;
-  }
-  if (!Object.prototype.hasOwnProperty.call(day, "moonPhaseType")) {
-    return Boolean(getMoonPhaseTypeFromText(day.moonPhase));
-  }
-  return false;
+  return day?.moonPhaseType === "full" || day?.moonPhaseType === "new";
 }
 
 function getDisplayMoonPhaseFraction(day) {
@@ -213,56 +201,6 @@ function renderSolunarTriggerPill(highlight) {
   </span>`;
 }
 
-function parsePeriodStartTime(rangeStr, todayYmd) {
-  if (!rangeStr) return null;
-  const parts = rangeStr.split(" - ");
-  if (!parts.length) return null;
-  const timeStr = parts[0].trim();
-  const match = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(timeStr);
-  if (!match) return null;
-
-  let hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const meridiem = match[3].toUpperCase();
-
-  if (meridiem === "AM") {
-    if (hours === 12) hours = 0;
-  } else {
-    if (hours !== 12) hours += 12;
-  }
-
-  const tzOffset = getEasternTzInteger(new Date());
-  const year = Number(todayYmd.slice(0, 4));
-  const month = Number(todayYmd.slice(4, 6)) - 1;
-  const day = Number(todayYmd.slice(6, 8));
-  return new Date(Date.UTC(year, month, day, hours - tzOffset, minutes, 0));
-}
-
-function parsePeriodEndTime(rangeStr, todayYmd) {
-  if (!rangeStr) return null;
-  const parts = rangeStr.split(" - ");
-  if (parts.length < 2) return null;
-  const timeStr = parts[1].trim();
-  const match = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(timeStr);
-  if (!match) return null;
-
-  let hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const meridiem = match[3].toUpperCase();
-
-  if (meridiem === "AM") {
-    if (hours === 12) hours = 0;
-  } else {
-    if (hours !== 12) hours += 12;
-  }
-
-  const tzOffset = getEasternTzInteger(new Date());
-  const year = Number(todayYmd.slice(0, 4));
-  const month = Number(todayYmd.slice(4, 6)) - 1;
-  const day = Number(todayYmd.slice(6, 8));
-  return new Date(Date.UTC(year, month, day, hours - tzOffset, minutes, 0));
-}
-
 function formatCountdown(diffMs) {
   if (diffMs < 60000) return "now";
   if (diffMs < 3600000) return `in ${Math.floor(diffMs / 60000)}m`;
@@ -272,38 +210,21 @@ function formatCountdown(diffMs) {
 }
 
 function getUpcomingSolunarPeriods(todayData) {
-  if (!todayData) return [];
+  if (!todayData?.periods?.length) return [];
   const now = Date.now();
-  const ymd = todayData.dateYmd;
-  const periods = [
-    { label: "Maj 1", range: todayData.major1, type: "major" },
-    { label: "Maj 2", range: todayData.major2, type: "major" },
-    { label: "Min 1", range: todayData.minor1, type: "minor" },
-    { label: "Min 2", range: todayData.minor2, type: "minor" },
-  ];
 
-  return periods
+  return todayData.periods
+    .filter((p) => p.end + 30 * 60000 > now)
     .map((p) => ({
-      ...p,
-      startTime: parsePeriodStartTime(p.range, ymd),
-      endTime: parsePeriodEndTime(p.range, ymd),
-    }))
-    .filter((p) => {
-      if (!p.startTime) return false;
-      const cutoff = p.endTime ? p.endTime.getTime() + 30 * 60000 : p.startTime.getTime();
-      return cutoff > now;
-    })
-    .sort((a, b) => a.startTime - b.startTime)
-    .map((p) => {
-      const countdown = p.startTime.getTime() > now
-        ? formatCountdown(p.startTime.getTime() - now)
-        : "active";
-      return { ...p, countdown };
-    });
+      label: `${p.type === "major" ? "Maj" : "Min"} ${p.index}`,
+      type: p.type,
+      range: p.range,
+      countdown: p.start > now ? formatCountdown(p.start - now) : "active",
+    }));
 }
 
 function renderQuickView(aep, weather, solunar, observation) {
-  const today = solunar ? (solunar.days.find((d) => d.dateYmd === solunar.startDate) ?? null) : null;
+  const today = getTodaySolunar(solunar);
   const phaseFraction = today ? getDisplayMoonPhaseFraction(today) : null;
   const todayIndex = solunar ? solunar.days.findIndex((d) => d.dateYmd === solunar.startDate) : -1;
   const highlight = solunar && todayIndex >= 0
@@ -380,12 +301,9 @@ function renderQuickView(aep, weather, solunar, observation) {
     </div>`).join("");
   } else {
     let hint = "";
-    if (solunar && solunar.days[1]) {
-      const tomorrow = solunar.days[1];
-      const tomorrowFirst = parsePeriodStartTime(tomorrow.major1, tomorrow.dateYmd);
-      if (tomorrowFirst) {
-        hint = ` — tomorrow Maj 1 at ${formatUsHour(tomorrowFirst)}`;
-      }
+    const tomorrowFirstMajor = solunar?.days[1]?.periods?.find((p) => p.type === "major");
+    if (tomorrowFirstMajor) {
+      hint = ` — tomorrow Maj 1 at ${formatUsHour(new Date(tomorrowFirstMajor.start))}`;
     }
     periodsHtml = `<p class="qv-done">Done for today${escapeHtml(hint)}</p>`;
   }
@@ -428,7 +346,7 @@ function renderFlowGraph(aep) {
   const gap = 8;
   const barW = (plotW - gap * (n - 1)) / n;
 
-  const maxF = Math.max(...pts.map((p) => p.flowCfs));
+  const maxF = Math.max(...pts.map((p) => p.flowCfs), 1);
 
   const barsHtml = pts.map((p, i) => {
     const barH = (p.flowCfs / maxF) * plotH;
@@ -684,9 +602,11 @@ function renderFutureSolunarItem(day, index, highlight) {
 
 function renderSolunar(solunar) {
   const today = getTodaySolunar(solunar);
-  const futureDays = solunar.days.filter((day) => day.dateYmd !== solunar.startDate);
+  const futureEntries = solunar.days
+    .map((day, index) => ({ day, index }))
+    .filter(({ day }) => day.dateYmd !== solunar.startDate);
 
-  if (!today && !futureDays.length) {
+  if (!today && !futureEntries.length) {
     renderState(el.solunarContent, "No solunar days were returned.", true);
     return;
   }
@@ -703,12 +623,9 @@ function renderSolunar(solunar) {
         <p class="state error">Today's solunar data is unavailable.</p>
       </section>`;
 
-  const futureHtml = futureDays
-    .map((day, futureIndex) => {
-      const currentIndex = solunar.days.findIndex((item) => item.dateYmd === day.dateYmd);
-      const highlight = getSolunarHighlightMeta(highlightMap.get(currentIndex));
-      return renderFutureSolunarItem(day, futureIndex, highlight);
-    })
+  const futureHtml = futureEntries
+    .map(({ day, index }, futureIndex) =>
+      renderFutureSolunarItem(day, futureIndex, getSolunarHighlightMeta(highlightMap.get(index))))
     .join("");
 
   setHtml(
@@ -816,7 +733,6 @@ async function loadDashboard() {
     }
 
     if (usgsResult.status === "fulfilled") {
-      state.usgs = usgsResult.value;
       renderUsgs(usgsResult.value);
     } else {
       renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);

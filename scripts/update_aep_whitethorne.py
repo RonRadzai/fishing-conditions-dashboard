@@ -28,7 +28,7 @@ def require_number(value: object, field_name: str) -> float:
     return float(value)
 
 
-def normalize_forecast(payload: dict) -> tuple[list[tuple[int, int]], int, str, str]:
+def normalize_forecast(payload: dict) -> tuple[list[tuple[int, int]], int, str, int]:
     if not isinstance(payload, dict):
         raise ValueError("AEP payload must be an object.")
 
