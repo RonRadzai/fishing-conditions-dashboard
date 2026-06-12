@@ -116,23 +116,21 @@ function renderMoonIconSm(phaseFraction) {
 }
 
 function getSolunarHighlightMap(days) {
-  const highlightMap = new Map(days.map((_, index) => [index, "normal"]));
-  const anchorIndexes = days
-    .map((day, index) => ({ day, index }))
-    .filter(({ day }) => isMajorMoonPhaseDay(day))
-    .map(({ index }) => index);
+  const highlightMap = new Map(days.map((_, index) => [index, { level: "normal", phase: null }]));
 
-  anchorIndexes.forEach((anchorIndex) => {
+  days.forEach((day, anchorIndex) => {
+    if (!isMajorMoonPhaseDay(day)) {
+      return;
+    }
     for (let offset = -2; offset <= 2; offset += 1) {
       const targetIndex = anchorIndex + offset;
       if (targetIndex < 0 || targetIndex >= days.length) {
         continue;
       }
-      const current = highlightMap.get(targetIndex);
       if (offset === 0) {
-        highlightMap.set(targetIndex, "peak");
-      } else if (current !== "peak") {
-        highlightMap.set(targetIndex, "window");
+        highlightMap.set(targetIndex, { level: "peak", phase: day.moonPhaseType });
+      } else if (highlightMap.get(targetIndex).level !== "peak") {
+        highlightMap.set(targetIndex, { level: "window", phase: day.moonPhaseType });
       }
     }
   });
@@ -140,20 +138,26 @@ function getSolunarHighlightMap(days) {
   return highlightMap;
 }
 
-function getSolunarHighlightMeta(level) {
-  if (level === "peak") {
+function getSolunarHighlightMeta(highlight) {
+  const phaseName = highlight?.phase === "new"
+    ? "New Moon"
+    : highlight?.phase === "full"
+      ? "Full Moon"
+      : "Full or New Moon";
+
+  if (highlight?.level === "peak") {
     return {
       className: "solunar-highlight-peak",
       label: "Best day",
-      description: "Full or New Moon",
+      description: phaseName,
       isPeak: true,
     };
   }
-  if (level === "window") {
+  if (highlight?.level === "window") {
     return {
       className: "solunar-highlight-window",
       label: "Prime window",
-      description: "Within 2 days of Full or New Moon",
+      description: `Within 2 days of ${phaseName}`,
       isPeak: false,
     };
   }
