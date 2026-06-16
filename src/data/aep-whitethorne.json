@@ -2,119 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-06-16T10:52:46Z",
-  "lastUpdated": "2026-06-16T06:45:00",
-  "currentDateTime": 1781606985877,
+  "generatedAt": "2026-06-16T15:48:09Z",
+  "lastUpdated": "2026-06-16T11:45:00",
+  "currentDateTime": 1781624889096,
   "waterReleasedHoursOffset": 8,
   "currentFlowCfs": 10,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1781606985877,
+      "timestamp": 1781624889096,
       "flowCfs": 10
     },
     {
       "label": "+1h",
-      "timestamp": 1781610300000,
+      "timestamp": 1781628300000,
       "flowCfs": 10
     },
     {
       "label": "+2h",
-      "timestamp": 1781613900000,
+      "timestamp": 1781631900000,
       "flowCfs": 10
     },
     {
       "label": "+4h",
-      "timestamp": 1781621100000,
+      "timestamp": 1781639100000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1781635500000,
+      "timestamp": 1781653500000,
       "flowCfs": 10
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1781549100000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781550000000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781550900000,
-      "flowCfs": 1855
-    },
-    {
-      "timestamp": 1781551800000,
-      "flowCfs": 1857
-    },
-    {
-      "timestamp": 1781552700000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781553600000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781554500000,
-      "flowCfs": 1857
-    },
-    {
-      "timestamp": 1781555400000,
-      "flowCfs": 1851
-    },
-    {
-      "timestamp": 1781556300000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781557200000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781558100000,
-      "flowCfs": 1831
-    },
-    {
-      "timestamp": 1781559000000,
-      "flowCfs": 1809
-    },
-    {
-      "timestamp": 1781559900000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781560800000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781561700000,
-      "flowCfs": 1832
-    },
-    {
-      "timestamp": 1781562600000,
-      "flowCfs": 1829
-    },
-    {
-      "timestamp": 1781563500000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781564400000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1781565300000,
-      "flowCfs": 1827
-    },
-    {
-      "timestamp": 1781566200000,
-      "flowCfs": 1827
-    },
     {
       "timestamp": 1781567100000,
       "flowCfs": 10
@@ -421,6 +341,86 @@
     },
     {
       "timestamp": 1781635500000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781636400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781637300000,
+      "flowCfs": 1825
+    },
+    {
+      "timestamp": 1781638200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781639100000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781640000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781640900000,
+      "flowCfs": 1830
+    },
+    {
+      "timestamp": 1781641800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781642700000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781643600000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781644500000,
+      "flowCfs": 1858
+    },
+    {
+      "timestamp": 1781645400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781646300000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781647200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781648100000,
+      "flowCfs": 1854
+    },
+    {
+      "timestamp": 1781649000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781649900000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781650800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781651700000,
+      "flowCfs": 1855
+    },
+    {
+      "timestamp": 1781652600000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1781653500000,
       "flowCfs": 10
     }
   ]
