@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-07-11T19:37:51Z",
-  "lastUpdated": "2026-07-11T15:30:00",
-  "currentDateTime": 1783798671208,
+  "generatedAt": "2026-07-11T20:37:33Z",
+  "lastUpdated": "2026-07-11T16:30:00",
+  "currentDateTime": 1783802253632,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 896,
+  "currentFlowCfs": 937,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1783798671208,
-      "flowCfs": 896
+      "timestamp": 1783802253632,
+      "flowCfs": 937
     },
     {
       "label": "+1h",
-      "timestamp": 1783802700000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1783806300000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1783809900000,
+      "flowCfs": 10
+    },
+    {
       "label": "+4h",
-      "timestamp": 1783813500000,
+      "timestamp": 1783817100000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1783827000000,
-      "flowCfs": 1883
+      "timestamp": 1783830600000,
+      "flowCfs": 1896
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1783740600000,
-      "flowCfs": 1872
-    },
-    {
-      "timestamp": 1783741500000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1783742400000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1783743300000,
-      "flowCfs": 1872
-    },
     {
       "timestamp": 1783744200000,
       "flowCfs": 1870
@@ -422,6 +406,22 @@
     {
       "timestamp": 1783827000000,
       "flowCfs": 1883
+    },
+    {
+      "timestamp": 1783827900000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1783828800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1783829700000,
+      "flowCfs": 1896
+    },
+    {
+      "timestamp": 1783830600000,
+      "flowCfs": 1896
     }
   ]
 }
