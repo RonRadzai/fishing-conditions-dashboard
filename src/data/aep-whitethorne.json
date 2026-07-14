@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-07-14T22:28:35Z",
-  "lastUpdated": "2026-07-14T18:15:00",
-  "currentDateTime": 1784068115687,
+  "generatedAt": "2026-07-14T23:24:22Z",
+  "lastUpdated": "2026-07-14T19:15:00",
+  "currentDateTime": 1784071462857,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 5677,
+  "currentFlowCfs": 5665,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1784068115687,
-      "flowCfs": 5677
+      "timestamp": 1784071462857,
+      "flowCfs": 5665
     },
     {
       "label": "+1h",
-      "timestamp": 1784071800000,
-      "flowCfs": 5670
-    },
-    {
-      "label": "+2h",
       "timestamp": 1784075400000,
       "flowCfs": 5654
     },
     {
+      "label": "+2h",
+      "timestamp": 1784079000000,
+      "flowCfs": 5662
+    },
+    {
       "label": "+4h",
-      "timestamp": 1784082600000,
-      "flowCfs": 5715
+      "timestamp": 1784086200000,
+      "flowCfs": 5716
     },
     {
       "label": "+8h",
-      "timestamp": 1784096100000,
-      "flowCfs": 5593
+      "timestamp": 1784099700000,
+      "flowCfs": 3831
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1784009700000,
-      "flowCfs": 2576
-    },
-    {
-      "timestamp": 1784010600000,
-      "flowCfs": 2554
-    },
-    {
-      "timestamp": 1784011500000,
-      "flowCfs": 2553
-    },
-    {
-      "timestamp": 1784012400000,
-      "flowCfs": 2534
-    },
     {
       "timestamp": 1784013300000,
       "flowCfs": 4787
@@ -422,6 +406,22 @@
     {
       "timestamp": 1784096100000,
       "flowCfs": 5593
+    },
+    {
+      "timestamp": 1784097000000,
+      "flowCfs": 3699
+    },
+    {
+      "timestamp": 1784097900000,
+      "flowCfs": 3723
+    },
+    {
+      "timestamp": 1784098800000,
+      "flowCfs": 3624
+    },
+    {
+      "timestamp": 1784099700000,
+      "flowCfs": 3831
     }
   ]
 }
