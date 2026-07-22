@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-07-22T22:52:34Z",
-  "lastUpdated": "2026-07-22T18:45:00",
-  "currentDateTime": 1784760754584,
+  "generatedAt": "2026-07-22T23:54:17Z",
+  "lastUpdated": "2026-07-22T19:45:00",
+  "currentDateTime": 1784764457120,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 921,
+  "currentFlowCfs": 708,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1784760754584,
-      "flowCfs": 921
+      "timestamp": 1784764457120,
+      "flowCfs": 708
     },
     {
       "label": "+1h",
-      "timestamp": 1784764800000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
       "timestamp": 1784768400000,
       "flowCfs": 10
     },
     {
+      "label": "+2h",
+      "timestamp": 1784772000000,
+      "flowCfs": 10
+    },
+    {
       "label": "+4h",
-      "timestamp": 1784775600000,
+      "timestamp": 1784779200000,
       "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1784789100000,
-      "flowCfs": 1848
+      "timestamp": 1784792700000,
+      "flowCfs": 2329
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1784702700000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1784703600000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1784704500000,
-      "flowCfs": 1839
-    },
-    {
-      "timestamp": 1784705400000,
-      "flowCfs": 1828
-    },
     {
       "timestamp": 1784706300000,
       "flowCfs": 10
@@ -422,6 +406,22 @@
     {
       "timestamp": 1784789100000,
       "flowCfs": 1848
+    },
+    {
+      "timestamp": 1784790000000,
+      "flowCfs": 1848
+    },
+    {
+      "timestamp": 1784790900000,
+      "flowCfs": 2327
+    },
+    {
+      "timestamp": 1784791800000,
+      "flowCfs": 2331
+    },
+    {
+      "timestamp": 1784792700000,
+      "flowCfs": 2329
     }
   ]
 }
