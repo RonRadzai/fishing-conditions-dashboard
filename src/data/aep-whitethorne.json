@@ -2,55 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-08-01T22:27:00Z",
-  "lastUpdated": "2026-08-01T18:15:00",
-  "currentDateTime": 1785623220292,
+  "generatedAt": "2026-08-01T23:25:09Z",
+  "lastUpdated": "2026-08-01T19:15:00",
+  "currentDateTime": 1785626708872,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 1845,
+  "currentFlowCfs": 1824,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1785623220292,
-      "flowCfs": 1845
+      "timestamp": 1785626708872,
+      "flowCfs": 1824
     },
     {
       "label": "+1h",
-      "timestamp": 1785627000000,
-      "flowCfs": 1835
-    },
-    {
-      "label": "+2h",
       "timestamp": 1785630600000,
       "flowCfs": 1848
     },
     {
+      "label": "+2h",
+      "timestamp": 1785634200000,
+      "flowCfs": 1849
+    },
+    {
       "label": "+4h",
-      "timestamp": 1785637800000,
-      "flowCfs": 1838
+      "timestamp": 1785641400000,
+      "flowCfs": 1828
     },
     {
       "label": "+8h",
-      "timestamp": 1785651300000,
-      "flowCfs": 1825
+      "timestamp": 1785654900000,
+      "flowCfs": 1847
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1785564900000,
-      "flowCfs": 1846
-    },
-    {
-      "timestamp": 1785565800000,
-      "flowCfs": 1845
-    },
-    {
-      "timestamp": 1785566700000,
-      "flowCfs": 1844
-    },
-    {
-      "timestamp": 1785567600000,
-      "flowCfs": 10
-    },
     {
       "timestamp": 1785568500000,
       "flowCfs": 1832
@@ -422,6 +406,22 @@
     {
       "timestamp": 1785651300000,
       "flowCfs": 1825
+    },
+    {
+      "timestamp": 1785652200000,
+      "flowCfs": 1815
+    },
+    {
+      "timestamp": 1785653100000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1785654000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1785654900000,
+      "flowCfs": 1847
     }
   ]
 }
