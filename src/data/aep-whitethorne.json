@@ -2,47 +2,39 @@
   "location": "WhitethorneLaunch",
   "sourceUrl": "https://www.aep.com/recreation/hydro/whitethornelaunch/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch",
-  "generatedAt": "2026-08-17T13:58:05Z",
-  "lastUpdated": "2026-08-17T09:45:00",
-  "currentDateTime": 1786975085668,
+  "generatedAt": "2026-08-17T14:23:58Z",
+  "lastUpdated": "2026-08-17T10:15:00",
+  "currentDateTime": 1786976638335,
   "waterReleasedHoursOffset": 8,
-  "currentFlowCfs": 1894,
+  "currentFlowCfs": 1823,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1786975085668,
-      "flowCfs": 1894
+      "timestamp": 1786976638335,
+      "flowCfs": 1823
     },
     {
       "label": "+1h",
-      "timestamp": 1786978800000,
-      "flowCfs": 1943
+      "timestamp": 1786980600000,
+      "flowCfs": 1913
     },
     {
       "label": "+2h",
-      "timestamp": 1786982400000,
-      "flowCfs": 1816
+      "timestamp": 1786984200000,
+      "flowCfs": 1787
     },
     {
       "label": "+4h",
-      "timestamp": 1786989600000,
-      "flowCfs": 1852
+      "timestamp": 1786991400000,
+      "flowCfs": 1814
     },
     {
       "label": "+8h",
-      "timestamp": 1787003100000,
-      "flowCfs": 1812
+      "timestamp": 1787004900000,
+      "flowCfs": 1818
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1786916700000,
-      "flowCfs": 1934
-    },
-    {
-      "timestamp": 1786917600000,
-      "flowCfs": 1909
-    },
     {
       "timestamp": 1786918500000,
       "flowCfs": 1925
@@ -422,6 +414,14 @@
     {
       "timestamp": 1787003100000,
       "flowCfs": 1812
+    },
+    {
+      "timestamp": 1787004000000,
+      "flowCfs": 1878
+    },
+    {
+      "timestamp": 1787004900000,
+      "flowCfs": 1818
     }
   ]
 }
