@@ -104,7 +104,6 @@ h1 {
 }
 
 .solunar-section {
-  margin-bottom: 1rem;
   padding: 1.15rem 1.15rem 1.25rem;
 }
 
@@ -143,6 +142,7 @@ button:hover {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .card-title-row {
@@ -796,6 +796,13 @@ a {
 @media (min-width: 760px) {
   .solunar-today-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 919px) {
+  /* Single-column layout: show Flow above Weather. */
+  #aep-card {
+    order: -1;
   }
 }
 

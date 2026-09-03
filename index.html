@@ -26,18 +26,11 @@
         <p id="location-summary" class="subtitle">Loading location...</p>
       </header>
 
-      <section class="card quick-view" aria-label="Quick view">
-        <div id="qv-content" class="qv-content"></div>
-      </section>
-
-      <section class="card solunar-section" id="solunar-card">
+      <section class="card quick-view" aria-labelledby="qv-title">
         <div class="card-title-row">
-          <div>
-            <h2>Solunar</h2>
-          </div>
-          <p id="solunar-meta" class="card-meta">7 days | ET</p>
+          <h2 id="qv-title">Conditions at a Glance</h2>
         </div>
-        <div id="solunar-content" class="content-block"></div>
+        <div id="qv-content" class="qv-content"></div>
       </section>
 
       <section class="grid">
@@ -61,6 +54,16 @@
             <div id="usgs-content" class="content-block"></div>
           </div>
         </article>
+      </section>
+
+      <section class="card solunar-section" id="solunar-card">
+        <div class="card-title-row">
+          <div>
+            <h2>Solunar</h2>
+          </div>
+          <p id="solunar-meta" class="card-meta">7 days | ET</p>
+        </div>
+        <div id="solunar-content" class="content-block"></div>
       </section>
     </main>
 
