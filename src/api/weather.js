@@ -25,6 +25,23 @@ function getPointsData(lat, lon) {
   return pointsCachePromise;
 }
 
+// Automated airport stations (AWOS) often omit the sky/weather text even when
+// they report temperature and wind. Numbers come from the closest station that
+// has them; the conditions text is borrowed from the closest station that
+// reports one, so the description is never blank when a nearby station has it.
+const OBSERVATION_STATION_CANDIDATES = 4;
+
+async function fetchLatestObservation(station) {
+  const stationId = station.properties?.stationIdentifier;
+  if (!stationId) throw new Error("Station missing identifier.");
+  const obsRes = await fetchWithTimeout(`https://api.weather.gov/stations/${stationId}/observations/latest`, {
+    headers: { Accept: "application/geo+json" },
+  }, WEATHER_TIMEOUT_MS);
+  if (!obsRes.ok) throw new Error("NWS observation request failed.");
+  const properties = (await obsRes.json()).properties || {};
+  return { stationId, stationName: station.properties?.name || stationId, properties };
+}
+
 export async function getCurrentObservation(lat, lon) {
   const pointsData = await getPointsData(lat, lon);
   const stationsUrl = pointsData.properties?.observationStations;
@@ -34,15 +51,21 @@ export async function getCurrentObservation(lat, lon) {
   if (!stationsRes.ok) throw new Error("NWS stations request failed.");
 
   const stationsData = await stationsRes.json();
-  const stationId = stationsData.features?.[0]?.properties?.stationIdentifier;
-  if (!stationId) throw new Error("No observation stations found.");
+  const stations = (stationsData.features || []).slice(0, OBSERVATION_STATION_CANDIDATES);
+  if (!stations.length) throw new Error("No observation stations found.");
 
-  const obsRes = await fetchWithTimeout(`https://api.weather.gov/stations/${stationId}/observations/latest`, {
-    headers: { Accept: "application/geo+json" },
-  }, WEATHER_TIMEOUT_MS);
-  if (!obsRes.ok) throw new Error("NWS observation request failed.");
+  const results = await Promise.allSettled(stations.map(fetchLatestObservation));
+  const usable = results
+    .filter((r) => r.status === "fulfilled" && r.value.properties.temperature?.value != null)
+    .map((r) => r.value);
+  const chosen = usable[0];
+  if (!chosen) {
+    const firstError = results.find((r) => r.status === "rejected");
+    throw firstError ? firstError.reason : new Error("No usable observations found.");
+  }
+  const described = usable.find((o) => o.properties.textDescription) || null;
 
-  const p = (await obsRes.json()).properties;
+  const p = chosen.properties;
 
   const toF   = (c)   => c  != null ? Math.round(c * 9 / 5 + 32)      : null;
   const toMph = (kmh) => kmh != null ? Math.round(kmh * 0.621371)       : null;
@@ -55,7 +78,7 @@ export async function getCurrentObservation(lat, lon) {
   };
 
   return {
-    textDescription:       p.textDescription || null,
+    textDescription:       described ? described.properties.textDescription : null,
     temperature:           toF(p.temperature?.value),
     windSpeed:             toMph(p.windSpeed?.value),
     windDirection:         toCardinal(p.windDirection?.value),
@@ -65,6 +88,9 @@ export async function getCurrentObservation(lat, lon) {
     relativeHumidity:      p.relativeHumidity?.value != null ? Math.round(p.relativeHumidity.value) : null,
     precipitationLastHour: toIn(p.precipitationLastHour?.value),
     timestamp:             p.timestamp || null,
+    stationId:             chosen.stationId,
+    stationName:           chosen.stationName,
+    descriptionStationId:  described ? described.stationId : null,
   };
 }
 
