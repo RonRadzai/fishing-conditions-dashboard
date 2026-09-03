@@ -1,6 +1,6 @@
 import { getSolunarRange } from "./api/solunar.js";
 import { getAepCurrent } from "./api/aep.js";
-import { getUsgsRadfordLatest } from "./api/usgs.js";
+import { getUsgsLatest } from "./api/usgs.js";
 import { getCurrentObservation, getHourlyWeather } from "./api/weather.js";
 import {
   EASTERN_TIMEZONE,
@@ -11,8 +11,15 @@ import {
   getMoonPhaseFractionForDate,
   setHtml,
 } from "./utils.js";
+import {
+  DEFAULT_LOCATION_ID,
+  LOCATIONS,
+  RADFORD_GAUGE,
+  SOLUNAR_POINT,
+  getLocationById,
+} from "./locations.js";
 
-const LOCATION = { city: "Blacksburg", state: "VA", lat: 37.2296, lon: -80.4139, zip: "24060" };
+const LOCATION_STORAGE_KEY = "newriver.location";
 
 const STATIC_TTL_MS = 10 * 60 * 1000;
 
@@ -24,25 +31,20 @@ const el = {
   aepUpdated: document.querySelector("#aep-updated"),
   aepContent: document.querySelector("#aep-content"),
   usgsContent: document.querySelector("#usgs-content"),
+  nearestGaugeSection: document.querySelector("#nearest-gauge-section"),
+  nearestGaugeLabel: document.querySelector("#nearest-gauge-label"),
+  nearestGaugeContent: document.querySelector("#nearest-gauge-content"),
+  locationSelect: document.querySelector("#location-select"),
   solunarMeta: document.querySelector("#solunar-meta"),
   solunarContent: document.querySelector("#solunar-content"),
   qvContent: document.querySelector("#qv-content"),
 };
 
-const cache = {
-  aep: {
-    value: null,
-    fetchedAt: 0,
-    promise: null,
-  },
-  usgs: {
-    value: null,
-    fetchedAt: 0,
-    promise: null,
-  },
-};
+// Keyed per resource and location, e.g. "aep:pembroke" or "usgs:USGS-03171000".
+const cache = new Map();
 
 const state = {
+  location: null,
   activeLoadId: 0,
   expandedFutureIndex: null,
   solunar: null,
@@ -330,9 +332,10 @@ function renderQuickView(aep, weather, solunar, observation) {
   setHtml(el.qvContent, currentConditions + periodsSection + footer);
 }
 
-function updateLocationLabels() {
-  el.locationSummary.textContent = `${LOCATION.city}, ${LOCATION.state}`;
-  el.weatherMeta.textContent = `${LOCATION.city} | Now + 8h ET`;
+function updateLocationLabels(location) {
+  document.title = `${location.name} | New River`;
+  el.locationSummary.textContent = `Below Claytor Dam · ${location.name}`;
+  el.weatherMeta.textContent = `${location.weatherLabel} | Now + 8h ET`;
   el.solunarMeta.textContent = `7 days | ET`;
 }
 
@@ -363,7 +366,7 @@ const FLOW_GRAPH_PX_PER_HOUR = 60;
 // the full series at a fixed hourly scale inside a horizontal scroller,
 // past flows light, forecast dark, dashed marker at the current time.
 // The y-axis lives in a separate svg so it stays put while scrolling.
-function renderFlowGraph(aep) {
+function renderFlowGraph(aep, location) {
   const allPoints = (aep.forecastPoints ?? []).filter(
     (p) => Number.isFinite(p?.timestamp) && Number.isFinite(p?.flowCfs)
   );
@@ -426,11 +429,11 @@ function renderFlowGraph(aep) {
   const initialScrollX = Math.max(0, Math.round(xOf(now - FLOW_GRAPH_INITIAL_PAST_MS) - padL));
 
   return `<div class="flow-graph">
-  <p class="section-label">Whitethorne Flow <span class="graph-unit">cfs</span></p>
+  <p class="section-label">${escapeHtml(location.name)} Flow <span class="graph-unit">cfs</span></p>
   <div class="flow-graph-body">
     <svg class="flow-yaxis" width="${axisW}" height="${H}" viewBox="0 0 ${axisW} ${H}" aria-hidden="true">${axisHtml}</svg>
     <div class="flow-scroll" data-initial-x="${initialScrollX}">
-      <svg width="${svgW}" height="${H}" viewBox="0 0 ${svgW} ${H}" class="forecast-chart" role="img" aria-label="River flow at Whitethorne Launch, past and forecast">
+      <svg width="${svgW}" height="${H}" viewBox="0 0 ${svgW} ${H}" class="forecast-chart" role="img" aria-label="River flow at ${escapeHtml(location.name)}, past and forecast">
         ${gridHtml}
         ${pastHtml}
         ${futureHtml}
@@ -503,7 +506,7 @@ function renderWeather(weather, observation = null) {
   setHtml(el.weatherContent, obsHtml + `<ul class="table-list table-list-rich">${rows}</ul>`);
 }
 
-function renderAep(aep) {
+function renderAep(aep, location) {
   const flow = `${aep.currentFlowCfs.toLocaleString()} cfs`;
   const releaseLag = aep.waterReleasedHoursOffset === null
     ? "Unknown"
@@ -514,7 +517,7 @@ function renderAep(aep) {
   const generatedAt = aep.generatedAt
     ? formatUsDateTime(new Date(aep.generatedAt), EASTERN_TIMEZONE)
     : null;
-  const flowGraph = renderFlowGraph(aep) || `<p class="state">Forecast unavailable.</p>`;
+  const flowGraph = renderFlowGraph(aep, location) || `<p class="state">Forecast unavailable.</p>`;
 
   el.aepUpdated.textContent = aep.lastUpdated
     ? `AEP data updated ${formatUsDateTime(new Date(aep.lastUpdated), EASTERN_TIMEZONE)} ET`
@@ -533,7 +536,7 @@ function renderAep(aep) {
       </div>
     </div>
     ${flowGraph}
-    <p class="card-meta">Source: <a href="${aep.sourceUrl}" target="_blank" rel="noreferrer">AEP Whitethorne Launch</a>${generatedAt ? ` | Synced ${escapeHtml(generatedAt)} ET` : ""}${currentAsOf ? ` | As of ${escapeHtml(currentAsOf)} ET` : ""}${aep.stale ? " | Data may be stale" : ""}</p>`
+    <p class="card-meta">Source: <a href="${escapeHtml(aep.sourceUrl)}" target="_blank" rel="noreferrer">AEP ${escapeHtml(location.name)}</a>${generatedAt ? ` | Synced ${escapeHtml(generatedAt)} ET` : ""}${currentAsOf ? ` | As of ${escapeHtml(currentAsOf)} ET` : ""}${aep.stale ? " | Data may be stale" : ""}</p>`
   );
 
   const scroller = el.aepContent.querySelector(".flow-scroll");
@@ -542,7 +545,7 @@ function renderAep(aep) {
   }
 }
 
-function renderUsgs(usgs) {
+function renderUsgs(usgs, target) {
   const flow = usgs.flow?.value !== null && usgs.flow?.value !== undefined
     ? `${usgs.flow.value.toLocaleString()} cfs`
     : "N/A";
@@ -554,7 +557,7 @@ function renderUsgs(usgs) {
     : null;
 
   setHtml(
-    el.usgsContent,
+    target,
     `<div class="stat-grid stat-grid-elevated">
       <div class="stat-item">
         <p class="stat-label">Flow</p>
@@ -724,7 +727,11 @@ function renderSolunar(solunar) {
 }
 
 async function getCachedResource(key, loader) {
-  const entry = cache[key];
+  let entry = cache.get(key);
+  if (!entry) {
+    entry = { value: null, fetchedAt: 0, promise: null };
+    cache.set(key, entry);
+  }
   const now = Date.now();
   if (entry.value && now - entry.fetchedAt < STATIC_TTL_MS) {
     return entry.value;
@@ -765,57 +772,84 @@ function renderQuickViewFromState() {
   renderQuickView(state.aep, state.weather, state.solunar, state.observation);
 }
 
-function renderInitialLoadingState() {
+function renderInitialLoadingState(location) {
   renderState(el.qvContent, "Loading...");
   renderState(el.weatherContent, "Loading...");
-  renderState(el.solunarContent, "Loading...");
+  if (!state.solunar) {
+    renderState(el.solunarContent, "Loading...");
+  }
   renderState(el.aepContent, "Loading...");
   renderState(el.usgsContent, "Loading...");
   el.weatherUpdated.textContent = "";
   el.aepUpdated.textContent = "";
+
+  const nearestGauge = location.nearestGauge;
+  const showNearest = Boolean(nearestGauge) && nearestGauge.id !== RADFORD_GAUGE.id;
+  el.nearestGaugeSection.hidden = !showNearest;
+  if (showNearest) {
+    el.nearestGaugeLabel.textContent = nearestGauge.name;
+    renderState(el.nearestGaugeContent, "Loading...");
+  } else {
+    el.nearestGaugeLabel.textContent = "";
+    setHtml(el.nearestGaugeContent, "");
+  }
 }
 
-async function loadDashboard() {
+function renderUsgsResult(result, target) {
+  if (result.status === "fulfilled") {
+    renderUsgs(result.value, target);
+  } else {
+    renderState(target, `USGS error: ${result.reason.message}`, true);
+  }
+}
+
+async function loadDashboard(location) {
   const loadId = ++state.activeLoadId;
+  state.location = location;
   state.expandedFutureIndex = null;
-  state.solunar = null;
+  state.aep = null;
   state.weather = null;
   state.observation = null;
-  renderInitialLoadingState();
-  updateLocationLabels();
+  renderInitialLoadingState(location);
+  updateLocationLabels(location);
+
+  const nearestGauge = location.nearestGauge;
+  const loadNearest = Boolean(nearestGauge) && nearestGauge.id !== RADFORD_GAUGE.id;
 
   const staticTask = Promise.allSettled([
-    getCachedResource("aep", getAepCurrent),
-    getCachedResource("usgs", getUsgsRadfordLatest),
+    getCachedResource(`aep:${location.id}`, () => getAepCurrent(location)),
+    getCachedResource(`usgs:${RADFORD_GAUGE.id}`, () => getUsgsLatest(RADFORD_GAUGE.id)),
+    loadNearest
+      ? getCachedResource(`usgs:${nearestGauge.id}`, () => getUsgsLatest(nearestGauge.id))
+      : Promise.resolve(null),
   ]).then((staticResults) => {
     if (!isActiveRequest(loadId)) {
       return;
     }
 
-    const [aepResult, usgsResult] = staticResults;
+    const [aepResult, radfordResult, nearestResult] = staticResults;
 
     if (aepResult.status === "fulfilled") {
       state.aep = aepResult.value;
-      renderAep(aepResult.value);
+      renderAep(aepResult.value, location);
     } else {
       setHtml(
         el.aepContent,
         `<p class="state error">AEP error: ${escapeHtml(
           aepResult.reason.message
-        )}</p><p><a href="https://www.aep.com/recreation/hydro/whitethornelaunch/" target="_blank" rel="noreferrer">Open live Whitethorne page</a></p>`
+        )}</p><p><a href="${escapeHtml(location.aepUrl)}" target="_blank" rel="noreferrer">Open live AEP ${escapeHtml(location.name)} page</a></p>`
       );
     }
 
-    if (usgsResult.status === "fulfilled") {
-      renderUsgs(usgsResult.value);
-    } else {
-      renderState(el.usgsContent, `USGS error: ${usgsResult.reason.message}`, true);
+    renderUsgsResult(radfordResult, el.usgsContent);
+    if (loadNearest) {
+      renderUsgsResult(nearestResult, el.nearestGaugeContent);
     }
 
     renderQuickViewFromState();
   });
 
-  const observationTask = settle(getCurrentObservation(LOCATION.lat, LOCATION.lon)).then((result) => {
+  const observationTask = settle(getCurrentObservation(location.lat, location.lon)).then((result) => {
     if (!isActiveRequest(loadId)) {
       return;
     }
@@ -829,7 +863,7 @@ async function loadDashboard() {
     }
   });
 
-  const weatherTask = settle(getHourlyWeather(LOCATION.lat, LOCATION.lon, 8)).then((result) => {
+  const weatherTask = settle(getHourlyWeather(location.lat, location.lon, 8)).then((result) => {
     if (!isActiveRequest(loadId)) {
       return;
     }
@@ -844,7 +878,10 @@ async function loadDashboard() {
     renderQuickViewFromState();
   });
 
-  const solunarTask = settle(getSolunarRange(LOCATION.lat, LOCATION.lon, 7)).then((result) => {
+  // Solunar timing is shared across all access points, so compute it once.
+  const solunarTask = state.solunar
+    ? Promise.resolve()
+    : settle(getSolunarRange(SOLUNAR_POINT.lat, SOLUNAR_POINT.lon, 7)).then((result) => {
     if (!isActiveRequest(loadId)) {
       return;
     }
@@ -881,5 +918,82 @@ function onSolunarToggle(event) {
   renderSolunar(state.solunar);
 }
 
+function readLocationIdFromHash() {
+  const raw = window.location.hash.replace(/^#/, "");
+  try {
+    return raw ? decodeURIComponent(raw) : "";
+  } catch {
+    return "";
+  }
+}
+
+function readStoredLocationId() {
+  try {
+    return window.localStorage.getItem(LOCATION_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function storeLocationId(id) {
+  try {
+    window.localStorage.setItem(LOCATION_STORAGE_KEY, id);
+  } catch {
+    // Storage may be unavailable (private mode, blocked). The hash still works.
+  }
+}
+
+function syncHash(id) {
+  if (readLocationIdFromHash() !== id) {
+    history.replaceState(null, "", `#${id}`);
+  }
+}
+
+function resolveInitialLocation() {
+  return (
+    getLocationById(readLocationIdFromHash()) ||
+    getLocationById(readStoredLocationId()) ||
+    getLocationById(DEFAULT_LOCATION_ID) ||
+    LOCATIONS[0]
+  );
+}
+
+function populateLocationSelect() {
+  el.locationSelect.innerHTML = "";
+  for (const location of LOCATIONS) {
+    const option = document.createElement("option");
+    option.value = location.id;
+    option.textContent = location.name;
+    el.locationSelect.appendChild(option);
+  }
+}
+
+function selectLocation(location) {
+  if (!location || state.location?.id === location.id) {
+    return;
+  }
+
+  el.locationSelect.value = location.id;
+  storeLocationId(location.id);
+  syncHash(location.id);
+  loadDashboard(location);
+}
+
+function onLocationSelectChange() {
+  selectLocation(getLocationById(el.locationSelect.value));
+}
+
+function onHashChange() {
+  selectLocation(getLocationById(readLocationIdFromHash()));
+}
+
 el.solunarContent.addEventListener("click", onSolunarToggle);
-loadDashboard();
+el.locationSelect.addEventListener("change", onLocationSelectChange);
+window.addEventListener("hashchange", onHashChange);
+
+populateLocationSelect();
+const initialLocation = resolveInitialLocation();
+el.locationSelect.value = initialLocation.id;
+storeLocationId(initialLocation.id);
+syncHash(initialLocation.id);
+loadDashboard(initialLocation);

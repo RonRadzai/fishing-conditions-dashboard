@@ -1,4 +1,4 @@
-name: Update AEP Whitethorne Data
+name: Update AEP Data
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  update-aep-whitethorne:
+  update-aep:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,17 +18,17 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Refresh AEP Whitethorne data
-        run: python scripts/update_aep_whitethorne.py
+      - name: Refresh AEP flow data for all New River accesses
+        run: python scripts/update_aep.py
 
-      - name: Commit updated data artifact
+      - name: Commit updated data artifacts
         run: |
-          if git diff --quiet -- src/data/aep-whitethorne.json; then
+          git add src/data/aep/
+          if git diff --cached --quiet; then
             echo "No data changes to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data/aep-whitethorne.json
-          git commit -m "Update AEP Whitethorne data"
+          git commit -m "Update AEP data"
           git push
