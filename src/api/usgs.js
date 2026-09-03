@@ -1,7 +1,7 @@
 import { fetchWithTimeout } from "../utils.js";
 
-const USGS_URL =
-  "https://api.waterdata.usgs.gov/ogcapi/v0/collections/latest-continuous/items?f=json&monitoring_location_id=USGS-03171000&parameter_code=00060,00065";
+const USGS_BASE_URL =
+  "https://api.waterdata.usgs.gov/ogcapi/v0/collections/latest-continuous/items?f=json&parameter_code=00060,00065";
 const USGS_TIMEOUT_MS = 8000;
 
 function pluckValueByCode(features, code) {
@@ -27,8 +27,10 @@ function pluckValueByCode(features, code) {
   };
 }
 
-export async function getUsgsRadfordLatest() {
-  const response = await fetchWithTimeout(USGS_URL, {
+// gaugeId is a USGS monitoring location id such as "USGS-03171000".
+export async function getUsgsLatest(gaugeId) {
+  const url = `${USGS_BASE_URL}&monitoring_location_id=${encodeURIComponent(gaugeId)}`;
+  const response = await fetchWithTimeout(url, {
     headers: {
       Accept: "application/geo+json",
     },
@@ -45,6 +47,7 @@ export async function getUsgsRadfordLatest() {
   const gaugeHeight = pluckValueByCode(features, "00065");
 
   return {
+    gaugeId,
     flow,
     gaugeHeight,
   };

@@ -1,3 +1,10 @@
+"""Refresh AEP downstream flow forecasts for every New River access below Claytor Dam.
+
+Writes one JSON file per location under src/data/aep/. A failure at one
+location does not block the others; the script exits non-zero only when
+every location fails.
+"""
+
 from __future__ import annotations
 
 import json
@@ -10,10 +17,22 @@ from datetime import UTC, datetime
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-OUTPUT_PATH = ROOT / "src" / "data" / "aep-whitethorne.json"
-SOURCE_URL = "https://www.aep.com/recreation/hydro/whitethornelaunch/"
-SOURCE_ENDPOINT = "https://aepcom-api.aep.com/api/hydro/forecast?location=WhitethorneLaunch"
+OUTPUT_DIR = ROOT / "src" / "data" / "aep"
+API_BASE = "https://aepcom-api.aep.com/api/hydro/forecast?location="
+PAGE_BASE = "https://www.aep.com/recreation/hydro/"
 USER_AGENT = "Mozilla/5.0 (compatible; FishingConditionsDashboard/1.0)"
+
+# Ordered upstream (closest to Claytor Dam) to downstream.
+# id: file name and dashboard key; slug: AEP API location; page: AEP page path.
+LOCATIONS = [
+    {"id": "peppers-ferry", "slug": "PeppersFerryRd", "page": "peppersferryrd"},
+    {"id": "whitethorne", "slug": "WhitethorneLaunch", "page": "whitethornelaunch"},
+    {"id": "mccoy-falls", "slug": "McCoyFalls", "page": "mccoyfalls"},
+    {"id": "eggleston", "slug": "Eggleston", "page": "eggleston"},
+    {"id": "pembroke", "slug": "Pembroke", "page": "pembroke"},
+    {"id": "narrows", "slug": "Narrows", "page": "narrows"},
+    {"id": "glen-lyn", "slug": "GlenLyn", "page": "glenlyn"},
+]
 
 
 def fetch_json(url: str) -> dict:
@@ -28,7 +47,12 @@ def require_number(value: object, field_name: str) -> float:
     return float(value)
 
 
-def normalize_forecast(payload: dict) -> tuple[list[tuple[int, int]], int, str, int]:
+def compact_number(value: float) -> int | float:
+    """Return an int when the value is whole, otherwise the float (e.g. 14.5 hours)."""
+    return int(value) if value == int(value) else value
+
+
+def normalize_forecast(payload: dict) -> tuple[list[tuple[int, int]], int, str, int | float]:
     if not isinstance(payload, dict):
         raise ValueError("AEP payload must be an object.")
 
@@ -53,7 +77,9 @@ def normalize_forecast(payload: dict) -> tuple[list[tuple[int, int]], int, str, 
     if not isinstance(last_updated, str) or not last_updated:
         raise ValueError("AEP payload did not include lastUpdated.")
 
-    released_hours = int(require_number(payload.get("waterReleasedHoursOffset"), "waterReleasedHoursOffset"))
+    released_hours = compact_number(
+        require_number(payload.get("waterReleasedHoursOffset"), "waterReleasedHoursOffset")
+    )
     return normalized, current_date_time, last_updated, released_hours
 
 
@@ -87,28 +113,26 @@ def build_checkpoint(label: str, target_timestamp: int, forecast: list[tuple[int
     }
 
 
-def build_output(payload: dict) -> dict:
+def build_output(location: dict, payload: dict) -> dict:
     forecast, current_date_time, last_updated, released_hours = normalize_forecast(payload)
     current_flow = interpolate_current_flow(current_date_time, forecast)
 
+    hour_ms = 60 * 60 * 1000
     checkpoints = [
-        {
-            "label": "Now",
-            "timestamp": current_date_time,
-            "flowCfs": current_flow,
-        },
-        build_checkpoint("+1h", current_date_time + 60 * 60 * 1000, forecast),
-        build_checkpoint("+2h", current_date_time + 2 * 60 * 60 * 1000, forecast),
-        build_checkpoint("+4h", current_date_time + 4 * 60 * 60 * 1000, forecast),
-        build_checkpoint("+8h", current_date_time + 8 * 60 * 60 * 1000, forecast),
+        {"label": "Now", "timestamp": current_date_time, "flowCfs": current_flow},
+        build_checkpoint("+1h", current_date_time + hour_ms, forecast),
+        build_checkpoint("+2h", current_date_time + 2 * hour_ms, forecast),
+        build_checkpoint("+4h", current_date_time + 4 * hour_ms, forecast),
+        build_checkpoint("+8h", current_date_time + 8 * hour_ms, forecast),
     ]
 
     generated_at = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
     return {
-        "location": "WhitethorneLaunch",
-        "sourceUrl": SOURCE_URL,
-        "sourceEndpoint": SOURCE_ENDPOINT,
+        "id": location["id"],
+        "location": location["slug"],
+        "sourceUrl": f"{PAGE_BASE}{location['page']}/",
+        "sourceEndpoint": f"{API_BASE}{location['slug']}",
         "generatedAt": generated_at,
         "lastUpdated": last_updated,
         "currentDateTime": current_date_time,
@@ -119,26 +143,38 @@ def build_output(payload: dict) -> dict:
     }
 
 
-def write_output(data: dict) -> None:
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+def write_output(path: pathlib.Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
-        mode="w", encoding="utf-8", dir=OUTPUT_PATH.parent, delete=False, suffix=".tmp"
+        mode="w", encoding="utf-8", dir=path.parent, delete=False, suffix=".tmp"
     ) as tmp:
         tmp.write(json.dumps(data, indent=2) + "\n")
         tmp_path = pathlib.Path(tmp.name)
-    tmp_path.replace(OUTPUT_PATH)
+    tmp_path.replace(path)
+
+
+def update_location(location: dict) -> pathlib.Path:
+    payload = fetch_json(f"{API_BASE}{location['slug']}")
+    output = build_output(location, payload)
+    path = OUTPUT_DIR / f"{location['id']}.json"
+    write_output(path, output)
+    return path
 
 
 def main() -> int:
-    try:
-        payload = fetch_json(SOURCE_ENDPOINT)
-        output = build_output(payload)
-        write_output(output)
-    except Exception as exc:  # noqa: BLE001
-        print(f"Failed to update AEP Whitethorne data: {exc}", file=sys.stderr)
-        return 1
+    failures = 0
+    for location in LOCATIONS:
+        try:
+            path = update_location(location)
+        except Exception as exc:  # noqa: BLE001
+            failures += 1
+            print(f"Failed to update AEP {location['slug']} data: {exc}", file=sys.stderr)
+            continue
+        print(f"Wrote {path}")
 
-    print(f"Wrote {OUTPUT_PATH}")
+    if failures == len(LOCATIONS):
+        print("All AEP locations failed to update.", file=sys.stderr)
+        return 1
     return 0
 
 
