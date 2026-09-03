@@ -3,43 +3,39 @@
   "location": "Narrows",
   "sourceUrl": "https://www.aep.com/recreation/hydro/narrows/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=Narrows",
-  "generatedAt": "2026-09-03T14:22:20Z",
-  "lastUpdated": "2026-09-03T10:15:00",
-  "currentDateTime": 1788445340704,
+  "generatedAt": "2026-09-03T14:39:28Z",
+  "lastUpdated": "2026-09-03T10:30:00",
+  "currentDateTime": 1788446368503,
   "waterReleasedHoursOffset": 21,
-  "currentFlowCfs": 1613,
+  "currentFlowCfs": 530,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1788445340704,
-      "flowCfs": 1613
+      "timestamp": 1788446368503,
+      "flowCfs": 530
     },
     {
       "label": "+1h",
-      "timestamp": 1788448500000,
-      "flowCfs": 1847
+      "timestamp": 1788450300000,
+      "flowCfs": 10
     },
     {
       "label": "+2h",
-      "timestamp": 1788452100000,
-      "flowCfs": 1792
+      "timestamp": 1788453900000,
+      "flowCfs": 10
     },
     {
       "label": "+4h",
-      "timestamp": 1788459300000,
-      "flowCfs": 1793
+      "timestamp": 1788461100000,
+      "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1788473700000,
-      "flowCfs": 1820
+      "timestamp": 1788475500000,
+      "flowCfs": 10
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1788434100000,
-      "flowCfs": 1858
-    },
     {
       "timestamp": 1788435000000,
       "flowCfs": 1668
@@ -423,6 +419,10 @@
     {
       "timestamp": 1788520500000,
       "flowCfs": 1850
+    },
+    {
+      "timestamp": 1788521400000,
+      "flowCfs": 1844
     }
   ]
 }

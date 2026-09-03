@@ -3,43 +3,39 @@
   "location": "PeppersFerryRd",
   "sourceUrl": "https://www.aep.com/recreation/hydro/peppersferryrd/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=PeppersFerryRd",
-  "generatedAt": "2026-09-03T14:21:47Z",
-  "lastUpdated": "2026-09-03T10:15:00",
-  "currentDateTime": 1788445307374,
+  "generatedAt": "2026-09-03T14:38:58Z",
+  "lastUpdated": "2026-09-03T10:30:00",
+  "currentDateTime": 1788446207864,
   "waterReleasedHoursOffset": 4,
-  "currentFlowCfs": 1788,
+  "currentFlowCfs": 947,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1788445307374,
-      "flowCfs": 1788
+      "timestamp": 1788446207864,
+      "flowCfs": 947
     },
     {
       "label": "+1h",
-      "timestamp": 1788448500000,
-      "flowCfs": 1836
+      "timestamp": 1788449400000,
+      "flowCfs": 1732
     },
     {
       "label": "+2h",
-      "timestamp": 1788452100000,
-      "flowCfs": 1841
+      "timestamp": 1788453000000,
+      "flowCfs": 1718
     },
     {
       "label": "+4h",
-      "timestamp": 1788459300000,
-      "flowCfs": 1850
+      "timestamp": 1788460200000,
+      "flowCfs": 1844
     },
     {
       "label": "+8h",
-      "timestamp": 1788459300000,
-      "flowCfs": 1850
+      "timestamp": 1788460200000,
+      "flowCfs": 1844
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1788372900000,
-      "flowCfs": 1858
-    },
     {
       "timestamp": 1788373800000,
       "flowCfs": 1668
@@ -423,6 +419,10 @@
     {
       "timestamp": 1788459300000,
       "flowCfs": 1850
+    },
+    {
+      "timestamp": 1788460200000,
+      "flowCfs": 1844
     }
   ]
 }
