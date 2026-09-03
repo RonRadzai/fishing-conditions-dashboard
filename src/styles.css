@@ -788,7 +788,7 @@ a {
 .qv-period-range { font-family: "IBM Plex Mono", monospace; font-size: 0.9rem; font-weight: 600; }
 .qv-period--major .qv-period-range { color: var(--accent-strong); }
 .qv-period--minor .qv-period-range { color: var(--accent-2); }
-.qv-period-cd { font-size: 0.76rem; font-weight: 700; color: var(--accent-warm); white-space: nowrap; }
+.qv-period-cd { font-size: 0.76rem; font-weight: 700; color: #845e12; white-space: nowrap; }
 
 .qv-done { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.88rem; font-style: italic; }
 
