@@ -8,6 +8,7 @@ import {
   formatDateLabel,
   formatUsDateTime,
   formatUsHour,
+  formatYmdInTimeZone,
   getMoonPhaseFractionForDate,
   setHtml,
 } from "./utils.js";
@@ -37,6 +38,7 @@ const el = {
   locationSelect: document.querySelector("#location-select"),
   solunarMeta: document.querySelector("#solunar-meta"),
   solunarContent: document.querySelector("#solunar-content"),
+  qvDate: document.querySelector("#qv-date"),
   qvContent: document.querySelector("#qv-content"),
 };
 
@@ -63,7 +65,7 @@ function isActiveRequest(loadId) {
   return state.activeLoadId === loadId;
 }
 
-function getMoonLitMarkup(phaseFraction) {
+function getMoonLitMarkup(phaseFraction, fill = "#F6E7B0") {
   const normalizedPhase = ((phaseFraction % 1) + 1) % 1;
   const cx = 20, cy = 20, R = 18;
   const topY = cy - R;
@@ -73,28 +75,49 @@ function getMoonLitMarkup(phaseFraction) {
     return "";
   }
   if (Math.abs(normalizedPhase - 0.5) <= 0.01) {
-    return `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#F6E7B0"/>`;
+    return `<circle cx="${cx}" cy="${cy}" r="${R}" fill="${fill}"/>`;
   }
   if (normalizedPhase < 0.5) {
     const rx = (R * Math.abs(Math.cos(2 * Math.PI * normalizedPhase))).toFixed(2);
     const sweep = normalizedPhase < 0.25 ? 0 : 1;
-    return `<path d="M${cx},${topY} A${R},${R} 0 0 1 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z" fill="#F6E7B0"/>`;
+    return `<path d="M${cx},${topY} A${R},${R} 0 0 1 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z" fill="${fill}"/>`;
   }
 
   const wf = normalizedPhase - 0.5;
   const rx = (R * Math.abs(Math.cos(2 * Math.PI * wf))).toFixed(2);
   const sweep = wf < 0.25 ? 0 : 1;
-  return `<path d="M${cx},${topY} A${R},${R} 0 0 0 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z" fill="#F6E7B0"/>`;
+  return `<path d="M${cx},${topY} A${R},${R} 0 0 0 ${cx},${botY} A${rx},${R} 0 0 ${sweep} ${cx},${topY}Z" fill="${fill}"/>`;
 }
+
+let moonIconSeq = 0;
 
 function renderMoonPhaseIcon(phaseFraction, className = "") {
   const classes = ["moon-icon", className].filter(Boolean).join(" ");
+  const uid = `moon-mask-${moonIconSeq++}`;
+
+  // White disc minus the lit shape = the dark region. Blurring inside the mask
+  // softens the terminator; the outer limb stays crisp because clip-path is
+  // applied after the filter.
+  const darkMask = `<mask id="${uid}">
+        <circle cx="20" cy="20" r="18" fill="#fff"/>
+        <g filter="url(#moon-soft)">${getMoonLitMarkup(phaseFraction, "#000")}</g>
+      </mask>`;
 
   return `<span class="${classes}" aria-hidden="true">
     <svg viewBox="0 0 40 40" class="moon-svg">
-      <circle cx="20" cy="20" r="18" fill="#0E1625"/>
-      ${getMoonLitMarkup(phaseFraction)}
-      <circle cx="20" cy="20" r="18" fill="none" stroke="#FFF6D8" stroke-width="0.8" opacity="0.4"/>
+      <defs>${darkMask}</defs>
+      <g clip-path="url(#moon-disc)">
+        <circle cx="20" cy="20" r="18" fill="url(#moon-lit)"/>
+        <g fill="#c9b483" opacity="0.36">
+          <circle cx="15" cy="15.6" r="2.9"/>
+          <circle cx="23.8" cy="25" r="2.25"/>
+          <circle cx="11.9" cy="24.4" r="1.6"/>
+          <circle cx="25" cy="12.5" r="1.4"/>
+          <circle cx="18.8" cy="21.3" r="1.25"/>
+        </g>
+        <circle cx="20" cy="20" r="18" fill="none" stroke="#8b7c52" stroke-width="2" opacity="0.18"/>
+        <rect x="0" y="0" width="40" height="40" fill="url(#moon-dark)" mask="url(#${uid})"/>
+      </g>
     </svg>
   </span>`;
 }
@@ -222,7 +245,7 @@ function getUpcomingSolunarPeriods(todayData) {
   return todayData.periods
     .filter((p) => p.end + 30 * 60000 > now)
     .map((p) => ({
-      label: `${p.type === "major" ? "Maj" : "Min"} ${p.index}`,
+      label: `${p.type === "major" ? "Major" : "Minor"} ${p.index}`,
       type: p.type,
       range: p.range,
       countdown: p.start > now ? formatCountdown(p.start - now) : "active",
@@ -230,6 +253,9 @@ function getUpcomingSolunarPeriods(todayData) {
 }
 
 function renderQuickView(aep, weather, solunar, observation) {
+  // Re-rendered every 60s, so the date rolls over at midnight Eastern.
+  el.qvDate.textContent = formatDateLabel(formatYmdInTimeZone(new Date()));
+
   const today = getTodaySolunar(solunar);
   const phaseFraction = today ? getDisplayMoonPhaseFraction(today) : null;
   const todayIndex = solunar ? solunar.days.findIndex((d) => d.dateYmd === solunar.startDate) : -1;
@@ -243,7 +269,7 @@ function renderQuickView(aep, weather, solunar, observation) {
   const moonGroup = `<div class="qv-group qv-group-moon" aria-label="Moon and solunar conditions">
     <p class="qv-group-label">Moon</p>
     <div class="qv-moon-row">
-    ${moonIcon}
+      ${moonIcon}
       <div class="qv-moon-info">
         <span class="qv-moon-phase">${moonPhase}</span>
         ${renderHighlightPill(highlight)}
@@ -255,9 +281,10 @@ function renderQuickView(aep, weather, solunar, observation) {
   const flowVal = aep ? aep.currentFlowCfs.toLocaleString() : "--";
   const nowWeather = weather && weather.periods.length ? weather.periods[0] : null;
   const tempVal = nowWeather ? `${nowWeather.temperature}°` : "--";
-  const tempUnit = nowWeather ? nowWeather.temperatureUnit : "";
-  const windVal = nowWeather ? nowWeather.windSpeed : "--";
-  const windDir = nowWeather ? nowWeather.windDirection : "";
+  // NWS returns windSpeed as "0 mph" / "5 to 10 mph"; the snippet supplies the unit.
+  const windVal = nowWeather ? String(nowWeather.windSpeed).replace(/\s*mph$/i, "") : "--";
+  // windDirection falls back to "N/A" upstream, which reads badly in a label.
+  const windDir = nowWeather && nowWeather.windDirection !== "N/A" ? nowWeather.windDirection : "";
   const conditionText = observation ? escapeHtml(observation.textDescription || "--") : "";
   const humidityVal = observation && observation.relativeHumidity != null ? `${observation.relativeHumidity}` : "--";
   const pressureVal = observation && observation.barometricPressure != null ? `${observation.barometricPressure}` : "--";
@@ -266,29 +293,31 @@ function renderQuickView(aep, weather, solunar, observation) {
     <div class="qv-group qv-group-river" aria-label="River conditions">
       <p class="qv-group-label">River</p>
       <div class="qv-readout">
-        <span class="qv-label">Current flow</span>
         <span class="qv-value-line"><span class="qv-val">${escapeHtml(flowVal)}</span><span class="qv-unit">cfs</span></span>
+        <p class="qv-sub-label">Current flow</p>
       </div>
     </div>
     <div class="qv-group qv-group-weather" aria-label="Weather conditions">
-      <p class="qv-group-label">Weather</p>
-      ${conditionText ? `<p class="qv-cond-text">${conditionText}</p>` : ""}
+      <div class="qv-group-head">
+        <p class="qv-group-label">Weather</p>
+        ${conditionText ? `<p class="qv-cond-text">${conditionText}</p>` : ""}
+      </div>
       <div class="qv-weather-metrics">
         <div class="qv-readout">
-          <span class="qv-label">Air temp</span>
-          <span class="qv-value-line"><span class="qv-val">${escapeHtml(tempVal)}</span><span class="qv-unit">${escapeHtml(tempUnit || "F")}</span></span>
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(tempVal)}</span></span>
+          <p class="qv-sub-label">Air temp</p>
         </div>
-        <div class="qv-readout">
-          <span class="qv-label">Wind</span>
-          <span class="qv-value-line"><span class="qv-val">${escapeHtml(windVal)}</span><span class="qv-unit">${escapeHtml(windDir || "--")}</span></span>
+        <div class="qv-readout qv-readout-sub qv-readout-divided">
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(windVal)}</span><span class="qv-unit">mph</span></span>
+          <p class="qv-sub-label">Wind${windDir ? ` ${escapeHtml(windDir)}` : ""}</p>
         </div>
-        <div class="qv-readout">
-          <span class="qv-label">Humidity</span>
+        <div class="qv-readout qv-readout-sub">
           <span class="qv-value-line"><span class="qv-val">${escapeHtml(humidityVal)}</span><span class="qv-unit">%</span></span>
+          <p class="qv-sub-label">Humidity</p>
         </div>
-        <div class="qv-readout">
-          <span class="qv-label">Pressure</span>
+        <div class="qv-readout qv-readout-sub">
           <span class="qv-value-line"><span class="qv-val">${escapeHtml(pressureVal)}</span><span class="qv-unit">inHg</span></span>
+          <p class="qv-sub-label">Pressure</p>
         </div>
       </div>
     </div>
@@ -309,7 +338,7 @@ function renderQuickView(aep, weather, solunar, observation) {
     let hint = "";
     const tomorrowFirstMajor = solunar?.days[1]?.periods?.find((p) => p.type === "major");
     if (tomorrowFirstMajor) {
-      hint = ` — tomorrow Maj 1 at ${formatUsHour(new Date(tomorrowFirstMajor.start))}`;
+      hint = ` — tomorrow Major 1 at ${formatUsHour(new Date(tomorrowFirstMajor.start))}`;
     }
     periodsHtml = `<p class="qv-done">Done for today${escapeHtml(hint)}</p>`;
   }

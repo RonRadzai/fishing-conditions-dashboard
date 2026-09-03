@@ -12,10 +12,21 @@
   --danger: #9f2d25;
   --shadow: 0 22px 50px rgba(16, 38, 44, 0.13);
   --shadow-soft: 0 12px 28px rgba(16, 38, 44, 0.08);
+  --night: #0e1625;
+  --night-ink: #f2f4f8;
+  --night-muted: #8e9ab2;
+  --wash-river: rgba(29, 95, 162, 0.06);
+  --wash-weather: rgba(29, 95, 162, 0.03);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Shared SVG gradient/mask/filter defs; kept out of flow. A class rather than
+   an inline style so the page's CSP needs no 'unsafe-inline' for style-src. */
+.svg-defs {
+  position: absolute;
 }
 
 body {
@@ -205,6 +216,20 @@ button:hover {
 h2 {
   margin: 0.12rem 0 0;
   font-size: 1.26rem;
+}
+
+.card-title-row h2 {
+  margin: 0.3rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.card-title-row .card-meta {
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
 }
 
 .card-meta {
@@ -694,92 +719,123 @@ a {
 .qv-snapshot {
   display: grid;
   grid-template-columns: minmax(190px, 0.95fr) minmax(165px, 0.8fr) minmax(260px, 1.25fr);
-  gap: 0.85rem;
-  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
   margin-bottom: 0.95rem;
 }
 
-.qv-moon-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.qv-moon-phase { font-weight: 700; font-size: 1.05rem; color: var(--ink); }
-.qv-moon-info { display: flex; flex-direction: column; gap: 0.3rem; }
-
 .qv-group {
-  display: grid;
-  gap: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   min-width: 0;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid var(--line);
-  border-left-width: 4px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.46);
-}
-
-.qv-group-moon {
-  border-left-color: var(--accent-warm);
-  background: linear-gradient(135deg, rgba(242, 198, 109, 0.16), rgba(255, 255, 255, 0.42));
-}
-
-.qv-group-river {
-  border-left-color: var(--accent);
-  background: linear-gradient(135deg, rgba(30, 121, 102, 0.09), rgba(255, 255, 255, 0.42));
-}
-
-.qv-group-weather {
-  border-left-color: var(--accent-2);
-  background: linear-gradient(135deg, rgba(29, 95, 162, 0.09), rgba(255, 255, 255, 0.42));
+  padding: 1rem 1.25rem;
 }
 
 .qv-group-label {
   margin: 0;
-  color: var(--muted-soft);
-  font-size: 0.7rem;
-  text-transform: uppercase;
+  font-size: 0.6875rem;
+  font-weight: 700;
   letter-spacing: 0.1em;
-  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted-soft);
 }
 
-.qv-cond-text {
-  margin: 0;
-  color: var(--ink);
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.qv-weather-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.7rem;
-  align-items: end;
-}
-
-.qv-readout {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.qv-value-line {
+.qv-group-head {
   display: flex;
   align-items: baseline;
-  gap: 0.3rem;
-  min-width: 0;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.qv-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-soft); font-weight: 700; margin-bottom: 0.1rem; }
-.qv-val { font-family: "IBM Plex Mono", monospace; font-size: 1.48rem; font-weight: 700; line-height: 1.1; }
-.qv-unit { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; margin-top: 0.15rem; }
+/* Moon - night tile */
+.qv-group-moon {
+  position: relative;
+  overflow: hidden;
+  background: var(--night);
+  color: var(--night-ink);
+}
+.qv-group-moon .qv-group-label { color: var(--night-muted); }
+
+/* Decorative stars. One element, three dots via box-shadow. */
+.qv-group-moon::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 38px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f7e9b2;
+  box-shadow:
+    -20px 28px 0 -0.5px #d7e8ff,
+    28px 46px 0 -0.5px rgba(215, 232, 255, 0.6);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.qv-moon-row { display: flex; align-items: center; gap: 0.875rem; flex: 1; min-width: 0; }
+.qv-moon-info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.qv-moon-phase { font-size: 1.375rem; font-weight: 700; line-height: 1.1; }
+.qv-moon-sub { margin: 0; font-size: 0.75rem; color: var(--night-muted); }
+
+/* River / Weather washes */
+.qv-group-river {
+  background: var(--wash-river);
+  border-right: 1px solid var(--line);
+}
+.qv-group-weather { background: var(--wash-weather); }
+
+/* Readouts */
+.qv-readout { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.qv-value-line { display: flex; align-items: baseline; gap: 0.375rem; min-width: 0; }
+
+.qv-val {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.qv-unit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.qv-sub-label {
+  margin: 0.375rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-soft);
+}
+.qv-cond-text { margin: 0; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+
+/* Weather: one hero metric + three secondary */
+.qv-weather-metrics {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr;
+  gap: 1rem;
+  align-items: end;
+  flex: 1;
+}
+.qv-readout-sub .qv-val { font-size: 1.125rem; font-weight: 600; }
+.qv-readout-sub .qv-unit {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.6875rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.qv-readout-divided { border-left: 1px solid var(--line); padding-left: 0.875rem; }
 
 .qv-next-label { margin: 0 0 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: #9a6f17; }
 
 .qv-period {
-  display: grid; grid-template-columns: 46px 1fr auto;
+  display: grid; grid-template-columns: 64px 1fr auto;
   gap: 0.6rem; align-items: baseline;
   padding: 0.4rem 0; border-bottom: 1px solid var(--line);
 }
@@ -893,6 +949,15 @@ a {
 
   .qv-snapshot {
     grid-template-columns: 1fr;
+  }
+
+  .qv-group-river {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .qv-weather-metrics {
+    grid-template-columns: auto 1fr 1fr;
   }
 
   .solunar-day-trigger-meta {
