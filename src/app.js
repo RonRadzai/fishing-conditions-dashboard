@@ -23,6 +23,10 @@ import {
 const LOCATION_STORAGE_KEY = "newriver.location";
 
 const STATIC_TTL_MS = 10 * 60 * 1000;
+// Re-pull live feeds (gauge, AEP, weather) while the tab stays open; USGS posts every 15 min.
+const LIVE_REFRESH_MS = 10 * 60 * 1000;
+// A gauge reading older than this is flagged Stale in the quick view.
+const GAUGE_STALE_MS = 2 * 60 * 60 * 1000;
 
 const el = {
   locationSummary: document.querySelector("#location-summary"),
@@ -53,9 +57,13 @@ const state = {
   aep: null,
   weather: null,
   observation: null,
+  // Latest reading from the access point's nearest USGS gauge, plus its display name.
+  gauge: null,
 };
 
 let quickViewRefreshId = null;
+let liveRefreshId = null;
+let lastLiveRefreshAt = 0;
 
 function renderState(target, message, isError = false) {
   setHtml(target, `<p class="state ${isError ? "error" : ""}">${escapeHtml(message)}</p>`);
@@ -252,7 +260,56 @@ function getUpcomingSolunarPeriods(todayData) {
     }));
 }
 
-function renderQuickView(aep, weather, solunar, observation) {
+// AEP's downstream series alternates between the release rate and a ~10 cfs
+// placeholder in 30-minute steps, so an instantaneous read is a coin flip.
+// The high phase within the surrounding hour is the release rate.
+function getAepFlowNearNow(aep) {
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000;
+  const nearby = (aep.forecastPoints || []).filter(
+    (p) => Number.isFinite(p?.timestamp) && Number.isFinite(p?.flowCfs) && Math.abs(p.timestamp - now) <= windowMs
+  );
+  if (!nearby.length) return aep.currentFlowCfs;
+  return Math.max(...nearby.map((p) => p.flowCfs));
+}
+
+function formatReadingTime(dateTime) {
+  const date = new Date(dateTime);
+  if (!Number.isFinite(date.getTime())) return "";
+  // Older readings need the date too, or "12:15 PM" reads as today.
+  return Date.now() - date.getTime() > 12 * 60 * 60 * 1000
+    ? formatUsDateTime(date, EASTERN_TIMEZONE)
+    : formatUsHour(date, EASTERN_TIMEZONE);
+}
+
+// The River tile shows measured gauge data; the AEP forecast is only a backup.
+// Flow carries a "~" because a gauge miles away is a close estimate, not the
+// reading at the access point.
+function getRiverReadout(gauge, aep) {
+  const flowValue = gauge?.flow?.value;
+  if (Number.isFinite(flowValue)) {
+    const readingTime = gauge.flow.dateTime || gauge.gaugeHeight?.dateTime || null;
+    const readingMs = readingTime ? Date.parse(readingTime) : NaN;
+    const timeLabel = readingTime ? formatReadingTime(readingTime) : "";
+    return {
+      flowText: `~${Math.round(flowValue).toLocaleString()}`,
+      levelText: Number.isFinite(gauge.gaugeHeight?.value) ? String(gauge.gaugeHeight.value) : "--",
+      sourceText: timeLabel ? `${gauge.name} · ${timeLabel}` : gauge.name,
+      stale: Number.isFinite(readingMs) ? Date.now() - readingMs > GAUGE_STALE_MS : false,
+    };
+  }
+  if (aep) {
+    return {
+      flowText: `~${Math.round(getAepFlowNearNow(aep)).toLocaleString()}`,
+      levelText: "--",
+      sourceText: "AEP forecast · no gauge data",
+      stale: Boolean(aep.stale),
+    };
+  }
+  return { flowText: "--", levelText: "--", sourceText: "", stale: false };
+}
+
+function renderQuickView(aep, weather, solunar, observation, gauge) {
   // Re-rendered every 60s, so the date rolls over at midnight Eastern.
   el.qvDate.textContent = formatDateLabel(formatYmdInTimeZone(new Date()));
 
@@ -278,7 +335,7 @@ function renderQuickView(aep, weather, solunar, observation) {
   </div>`;
 
   // Current conditions
-  const flowVal = aep ? aep.currentFlowCfs.toLocaleString() : "--";
+  const river = getRiverReadout(gauge, aep);
   const nowWeather = weather && weather.periods.length ? weather.periods[0] : null;
   const tempVal = nowWeather ? `${nowWeather.temperature}°` : "--";
   // NWS returns windSpeed as "0 mph" / "5 to 10 mph"; the snippet supplies the unit.
@@ -291,12 +348,21 @@ function renderQuickView(aep, weather, solunar, observation) {
   const currentConditions = `<div class="qv-snapshot">
     ${moonGroup}
     <div class="qv-group qv-group-river" aria-label="River conditions">
-      <p class="qv-group-label">River</p>
-      <div class="qv-readout">
-        <span class="qv-value-line"><span class="qv-val">${escapeHtml(flowVal)}</span><span class="qv-unit">cfs</span></span>
-        <p class="qv-sub-label">Current flow</p>
-        <p class="qv-unit-note">Cubic Feet Per Second (CFS)</p>
+      <div class="qv-group-head">
+        <p class="qv-group-label">River</p>
+        ${river.sourceText ? `<p class="qv-cond-text">${escapeHtml(river.sourceText)}</p>` : ""}
       </div>
+      <div class="qv-river-metrics">
+        <div class="qv-readout">
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(river.flowText)}</span><span class="qv-unit">cfs</span></span>
+          <p class="qv-sub-label">Current flow</p>
+        </div>
+        <div class="qv-readout qv-readout-sub qv-readout-divided">
+          <span class="qv-value-line"><span class="qv-val">${escapeHtml(river.levelText)}</span><span class="qv-unit">ft</span></span>
+          <p class="qv-sub-label">Gauge height</p>
+        </div>
+      </div>
+      <p class="qv-unit-note">Cubic Feet Per Second (CFS)</p>
     </div>
     <div class="qv-group qv-group-weather" aria-label="Weather conditions">
       <div class="qv-group-head">
@@ -352,7 +418,7 @@ function renderQuickView(aep, weather, solunar, observation) {
 
   // Footer
   const sunTimes = today ? `${escapeHtml(today.sunrise)} – ${escapeHtml(today.sunset)}` : "--";
-  const freshnessStatus = aep && aep.stale
+  const freshnessStatus = river.stale
     ? `<span class="summary-status is-stale">Stale</span>`
     : "";
   const footer = `<div class="qv-footer">
@@ -595,7 +661,7 @@ function renderUsgs(usgs, target) {
         <p class="stat-value">${escapeHtml(flow)}</p>
       </div>
       <div class="stat-item">
-        <p class="stat-label">Gage Height</p>
+        <p class="stat-label">Gauge Height</p>
         <p class="stat-value">${escapeHtml(level)}</p>
       </div>
     </div>
@@ -757,14 +823,14 @@ function renderSolunar(solunar) {
   );
 }
 
-async function getCachedResource(key, loader) {
+async function getCachedResource(key, loader, { force = false } = {}) {
   let entry = cache.get(key);
   if (!entry) {
     entry = { value: null, fetchedAt: 0, promise: null };
     cache.set(key, entry);
   }
   const now = Date.now();
-  if (entry.value && now - entry.fetchedAt < STATIC_TTL_MS) {
+  if (!force && entry.value && now - entry.fetchedAt < STATIC_TTL_MS) {
     return entry.value;
   }
 
@@ -800,7 +866,7 @@ async function settle(promise) {
 }
 
 function renderQuickViewFromState() {
-  renderQuickView(state.aep, state.weather, state.solunar, state.observation);
+  renderQuickView(state.aep, state.weather, state.solunar, state.observation, state.gauge);
 }
 
 function renderInitialLoadingState(location) {
@@ -841,6 +907,7 @@ async function loadDashboard(location) {
   state.aep = null;
   state.weather = null;
   state.observation = null;
+  state.gauge = null;
   renderInitialLoadingState(location);
   updateLocationLabels(location);
 
@@ -876,6 +943,7 @@ async function loadDashboard(location) {
     if (loadNearest) {
       renderUsgsResult(nearestResult, el.nearestGaugeContent);
     }
+    state.gauge = pickGaugeReading(location, radfordResult, nearestResult);
 
     renderQuickViewFromState();
   });
@@ -929,9 +997,77 @@ async function loadDashboard(location) {
 
   await Promise.allSettled([staticTask, observationTask, weatherTask, solunarTask]);
 
-  if (isActiveRequest(loadId) && !quickViewRefreshId) {
-    quickViewRefreshId = setInterval(renderQuickViewFromState, 60000);
+  if (isActiveRequest(loadId)) {
+    lastLiveRefreshAt = Date.now();
+    if (!quickViewRefreshId) {
+      quickViewRefreshId = setInterval(renderQuickViewFromState, 60000);
+    }
+    if (!liveRefreshId) {
+      liveRefreshId = setInterval(refreshLiveData, LIVE_REFRESH_MS);
+    }
   }
+}
+
+// The quick view uses the access point's nearest gauge (Radford for the upper
+// river, Glen Lyn for Narrows and Glen Lyn), never both.
+function pickGaugeReading(location, radfordResult, nearestResult) {
+  const nearestGauge = location.nearestGauge || RADFORD_GAUGE;
+  const result = nearestGauge.id !== RADFORD_GAUGE.id ? nearestResult : radfordResult;
+  if (!result || result.status !== "fulfilled" || !result.value) {
+    return null;
+  }
+  return { ...result.value, name: nearestGauge.name };
+}
+
+// Quiet background refresh: no loading states, and a failed fetch keeps the
+// previous values on screen rather than blanking a tile.
+async function refreshLiveData() {
+  const location = state.location;
+  if (!location || document.visibilityState === "hidden") {
+    return;
+  }
+  const loadId = state.activeLoadId;
+  const nearestGauge = location.nearestGauge;
+  const loadNearest = Boolean(nearestGauge) && nearestGauge.id !== RADFORD_GAUGE.id;
+
+  const [aepResult, radfordResult, nearestResult, observationResult, weatherResult] = await Promise.allSettled([
+    getCachedResource(`aep:${location.id}`, () => getAepCurrent(location), { force: true }),
+    getCachedResource(`usgs:${RADFORD_GAUGE.id}`, () => getUsgsLatest(RADFORD_GAUGE.id), { force: true }),
+    loadNearest
+      ? getCachedResource(`usgs:${nearestGauge.id}`, () => getUsgsLatest(nearestGauge.id), { force: true })
+      : Promise.resolve(null),
+    getCurrentObservation(location.lat, location.lon),
+    getHourlyWeather(location.lat, location.lon, 8),
+  ]);
+
+  // The user switched access points mid-refresh; that load owns the screen now.
+  if (!isActiveRequest(loadId)) {
+    return;
+  }
+  lastLiveRefreshAt = Date.now();
+
+  if (aepResult.status === "fulfilled" && aepResult.value.generatedAt !== state.aep?.generatedAt) {
+    state.aep = aepResult.value;
+    renderAep(state.aep, location);
+  }
+  if (radfordResult.status === "fulfilled") {
+    renderUsgs(radfordResult.value, el.usgsContent);
+  }
+  if (loadNearest && nearestResult.status === "fulfilled") {
+    renderUsgs(nearestResult.value, el.nearestGaugeContent);
+  }
+  state.gauge = pickGaugeReading(location, radfordResult, nearestResult) || state.gauge;
+
+  if (observationResult.status === "fulfilled") {
+    state.observation = observationResult.value;
+  }
+  if (weatherResult.status === "fulfilled") {
+    state.weather = weatherResult.value;
+  }
+  if (state.weather) {
+    renderWeather(state.weather, state.observation);
+  }
+  renderQuickViewFromState();
 }
 
 function onSolunarToggle(event) {
@@ -1021,6 +1157,13 @@ function onHashChange() {
 el.solunarContent.addEventListener("click", onSolunarToggle);
 el.locationSelect.addEventListener("change", onLocationSelectChange);
 window.addEventListener("hashchange", onHashChange);
+// Coming back to a tab that sat in the background: catch up right away instead
+// of waiting for the next interval tick.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && Date.now() - lastLiveRefreshAt > LIVE_REFRESH_MS) {
+    refreshLiveData();
+  }
+});
 
 populateLocationSelect();
 const initialLocation = resolveInitialLocation();

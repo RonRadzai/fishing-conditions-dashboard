@@ -718,7 +718,7 @@ a {
 
 .qv-snapshot {
   display: grid;
-  grid-template-columns: minmax(190px, 0.95fr) minmax(165px, 0.8fr) minmax(260px, 1.25fr);
+  grid-template-columns: minmax(190px, 0.9fr) minmax(230px, 1fr) minmax(260px, 1.2fr);
   border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
@@ -833,6 +833,9 @@ a {
 }
 .qv-cond-text { margin: 0; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
 .qv-unit-note { margin: 0.2rem 0 0; font-size: 0.72rem; color: var(--muted); }
+
+/* River: flow hero + gauge height secondary */
+.qv-river-metrics { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; flex: 1; }
 
 /* Weather: one hero metric + three secondary */
 .qv-weather-metrics {
