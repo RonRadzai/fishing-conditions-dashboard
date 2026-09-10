@@ -355,14 +355,13 @@ function renderQuickView(aep, weather, solunar, observation, gauge) {
       <div class="qv-river-metrics">
         <div class="qv-readout">
           <span class="qv-value-line"><span class="qv-val">${escapeHtml(river.flowText)}</span><span class="qv-unit">cfs</span></span>
-          <p class="qv-sub-label">Current flow</p>
+          <p class="qv-sub-label">Cubic feet per second</p>
         </div>
         <div class="qv-readout qv-readout-sub qv-readout-divided">
           <span class="qv-value-line"><span class="qv-val">${escapeHtml(river.levelText)}</span><span class="qv-unit">ft</span></span>
           <p class="qv-sub-label">Gauge height</p>
         </div>
       </div>
-      <p class="qv-unit-note">Cubic Feet Per Second (CFS)</p>
     </div>
     <div class="qv-group qv-group-weather" aria-label="Weather conditions">
       <div class="qv-group-head">
