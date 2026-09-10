@@ -295,6 +295,7 @@ function renderQuickView(aep, weather, solunar, observation) {
       <div class="qv-readout">
         <span class="qv-value-line"><span class="qv-val">${escapeHtml(flowVal)}</span><span class="qv-unit">cfs</span></span>
         <p class="qv-sub-label">Current flow</p>
+        <p class="qv-unit-note">Cubic Feet Per Second (CFS)</p>
       </div>
     </div>
     <div class="qv-group qv-group-weather" aria-label="Weather conditions">
@@ -344,7 +345,8 @@ function renderQuickView(aep, weather, solunar, observation) {
   }
 
   const periodsSection = `<div class="qv-periods">
-    <p class="qv-next-label">moon windows</p>
+    <p class="qv-next-label">Best bite times</p>
+    <p class="qv-next-sub">Based on moon's position in the sky</p>
     ${periodsHtml}
   </div>`;
 

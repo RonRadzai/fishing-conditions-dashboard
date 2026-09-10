@@ -780,6 +780,24 @@ a {
 .qv-moon-phase { font-size: 1.375rem; font-weight: 700; line-height: 1.1; }
 .qv-moon-sub { margin: 0; font-size: 0.75rem; color: var(--night-muted); }
 
+/* The highlight pill is styled for light cards; on the night tile its dark
+   gold/blue text is unreadable, so flip to light text on a translucent tint. */
+.qv-group-moon .solunar-highlight-pill.solunar-highlight-peak {
+  background: rgba(242, 198, 109, 0.18);
+  border: 1px solid rgba(242, 198, 109, 0.45);
+  color: #fbe6b3;
+}
+.qv-group-moon .solunar-highlight-pill.solunar-highlight-window {
+  background: rgba(166, 201, 244, 0.14);
+  border: 1px solid rgba(166, 201, 244, 0.4);
+  color: #dbe9ff;
+}
+.qv-group-moon .solunar-highlight-pill span:last-child { opacity: 1; }
+.qv-group-moon .solunar-peak-star {
+  background: var(--accent-warm);
+  color: #5a3d00;
+}
+
 /* River / Weather washes */
 .qv-group-river {
   background: var(--wash-river);
@@ -814,6 +832,7 @@ a {
   color: var(--muted-soft);
 }
 .qv-cond-text { margin: 0; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+.qv-unit-note { margin: 0.2rem 0 0; font-size: 0.72rem; color: var(--muted); }
 
 /* Weather: one hero metric + three secondary */
 .qv-weather-metrics {
@@ -832,7 +851,8 @@ a {
 }
 .qv-readout-divided { border-left: 1px solid var(--line); padding-left: 0.875rem; }
 
-.qv-next-label { margin: 0 0 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: var(--night); }
+.qv-next-label { margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: var(--night); }
+.qv-next-sub { margin: 0.15rem 0 0.5rem; font-size: 0.74rem; color: var(--muted); }
 
 .qv-period {
   display: grid; grid-template-columns: 64px 1fr auto;
