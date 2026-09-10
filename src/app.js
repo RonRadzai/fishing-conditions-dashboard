@@ -223,7 +223,7 @@ function renderHighlightPill(meta) {
   return `<div class="solunar-highlight-pill ${meta.className}">
     ${meta.isPeak ? `<span class="solunar-peak-star" aria-hidden="true">&#9733;</span>` : ""}
     <span>${escapeHtml(meta.label)}</span>
-    <span>${escapeHtml(meta.description)}</span>
+    ${meta.description ? `<span class="solunar-highlight-desc">${escapeHtml(meta.description)}</span>` : ""}
   </div>`;
 }
 
@@ -329,7 +329,7 @@ function renderQuickView(aep, weather, solunar, observation, gauge) {
       ${moonIcon}
       <div class="qv-moon-info">
         <span class="qv-moon-phase">${moonPhase}</span>
-        ${renderHighlightPill(highlight)}
+        ${renderHighlightPill(highlight.isPeak ? { ...highlight, description: "" } : highlight)}
       </div>
     </div>
   </div>`;

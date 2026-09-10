@@ -500,7 +500,7 @@ h2 {
   letter-spacing: 0;
 }
 
-.solunar-highlight-pill span:last-child {
+.solunar-highlight-pill .solunar-highlight-desc {
   font-weight: 600;
   opacity: 0.86;
 }
@@ -792,7 +792,7 @@ a {
   border: 1px solid rgba(166, 201, 244, 0.4);
   color: #dbe9ff;
 }
-.qv-group-moon .solunar-highlight-pill span:last-child { opacity: 1; }
+.qv-group-moon .solunar-highlight-pill .solunar-highlight-desc { opacity: 1; }
 .qv-group-moon .solunar-peak-star {
   background: var(--accent-warm);
   color: #5a3d00;
