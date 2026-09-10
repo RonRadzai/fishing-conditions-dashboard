@@ -267,7 +267,7 @@ function renderQuickView(aep, weather, solunar, observation) {
   const moonIcon = phaseFraction !== null ? renderMoonPhaseIcon(phaseFraction) : "";
   const moonPhase = today ? escapeHtml(today.moonPhase) : "--";
   const moonGroup = `<div class="qv-group qv-group-moon" aria-label="Moon and solunar conditions">
-    <p class="qv-group-label">Moon</p>
+    <p class="qv-group-label">Moon Phase</p>
     <div class="qv-moon-row">
       ${moonIcon}
       <div class="qv-moon-info">
