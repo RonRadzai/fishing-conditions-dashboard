@@ -718,7 +718,7 @@ a {
 
 .qv-snapshot {
   display: grid;
-  grid-template-columns: minmax(190px, 0.9fr) minmax(230px, 1fr) minmax(260px, 1.2fr);
+  grid-template-columns: minmax(190px, 0.9fr) minmax(240px, 1.1fr) minmax(260px, 1.2fr);
   border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
@@ -827,7 +827,7 @@ a {
   margin: 0.375rem 0 0;
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted-soft);
 }
@@ -835,6 +835,15 @@ a {
 
 /* River: flow hero + gauge height secondary */
 .qv-river-metrics { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; flex: 1; }
+.qv-group-river { container-type: inline-size; }
+/* Scale the flow number with the tile so both readouts share a row down to ~900px viewports;
+   at 1250px and up it matches the 2.5rem weather hero. */
+.qv-group-river .qv-readout:not(.qv-readout-sub) .qv-val { font-size: clamp(1.9rem, 12cqi, 2.5rem); }
+/* Narrower still: stack the readouts cleanly instead of wrapping around the divider. */
+@container (max-width: 250px) {
+  .qv-river-metrics { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+  .qv-group-river .qv-readout-divided { border-left: 0; padding-left: 0; }
+}
 
 /* Weather: one hero metric + three secondary */
 .qv-weather-metrics {
@@ -985,5 +994,22 @@ a {
   .solunar-day-trigger-meta {
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+/* Mid-width windows: three tiles across squeeze the weather metrics, so run
+   moon + river on the first row and give weather the full second row. */
+@media (min-width: 760px) and (max-width: 979px) {
+  .qv-snapshot {
+    grid-template-columns: minmax(190px, 0.9fr) minmax(240px, 1.1fr);
+  }
+
+  .qv-group-river {
+    border-right: 0;
+  }
+
+  .qv-group-weather {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--line);
   }
 }
