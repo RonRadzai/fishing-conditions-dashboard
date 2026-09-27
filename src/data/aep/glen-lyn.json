@@ -3,79 +3,39 @@
   "location": "GlenLyn",
   "sourceUrl": "https://www.aep.com/recreation/hydro/glenlyn/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=GlenLyn",
-  "generatedAt": "2026-09-26T22:25:38Z",
-  "lastUpdated": "2026-09-26T18:15:00",
-  "currentDateTime": 1790461538291,
+  "generatedAt": "2026-09-27T00:47:34Z",
+  "lastUpdated": "2026-09-26T20:45:00",
+  "currentDateTime": 1790470054208,
   "waterReleasedHoursOffset": 22.5,
-  "currentFlowCfs": 3616,
+  "currentFlowCfs": 3830,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1790461538291,
-      "flowCfs": 3616
+      "timestamp": 1790470054208,
+      "flowCfs": 3830
     },
     {
       "label": "+1h",
-      "timestamp": 1790465400000,
-      "flowCfs": 3590
+      "timestamp": 1790473500000,
+      "flowCfs": 3978
     },
     {
       "label": "+2h",
-      "timestamp": 1790469000000,
-      "flowCfs": 3702
+      "timestamp": 1790477100000,
+      "flowCfs": 3840
     },
     {
       "label": "+4h",
-      "timestamp": 1790476200000,
-      "flowCfs": 3550
-    },
-    {
-      "label": "+8h",
-      "timestamp": 1790490600000,
-      "flowCfs": 1877
-    }
-  ],
-  "forecastPoints": [
-    {
-      "timestamp": 1790455500000,
-      "flowCfs": 3656
-    },
-    {
-      "timestamp": 1790456400000,
-      "flowCfs": 3854
-    },
-    {
-      "timestamp": 1790457300000,
+      "timestamp": 1790484300000,
       "flowCfs": 3878
     },
     {
-      "timestamp": 1790458200000,
-      "flowCfs": 3837
-    },
-    {
-      "timestamp": 1790459100000,
-      "flowCfs": 3914
-    },
-    {
-      "timestamp": 1790460000000,
-      "flowCfs": 3757
-    },
-    {
-      "timestamp": 1790460900000,
-      "flowCfs": 3776
-    },
-    {
-      "timestamp": 1790461800000,
-      "flowCfs": 3550
-    },
-    {
-      "timestamp": 1790462700000,
-      "flowCfs": 3599
-    },
-    {
-      "timestamp": 1790463600000,
-      "flowCfs": 3737
-    },
+      "label": "+8h",
+      "timestamp": 1790498700000,
+      "flowCfs": 3685
+    }
+  ],
+  "forecastPoints": [
     {
       "timestamp": 1790464500000,
       "flowCfs": 3686
@@ -423,6 +383,46 @@
     {
       "timestamp": 1790541900000,
       "flowCfs": 1864
+    },
+    {
+      "timestamp": 1790542800000,
+      "flowCfs": 1928
+    },
+    {
+      "timestamp": 1790543700000,
+      "flowCfs": 1953
+    },
+    {
+      "timestamp": 1790544600000,
+      "flowCfs": 1975
+    },
+    {
+      "timestamp": 1790545500000,
+      "flowCfs": 1891
+    },
+    {
+      "timestamp": 1790546400000,
+      "flowCfs": 1819
+    },
+    {
+      "timestamp": 1790547300000,
+      "flowCfs": 1795
+    },
+    {
+      "timestamp": 1790548200000,
+      "flowCfs": 1803
+    },
+    {
+      "timestamp": 1790549100000,
+      "flowCfs": 1914
+    },
+    {
+      "timestamp": 1790550000000,
+      "flowCfs": 1758
+    },
+    {
+      "timestamp": 1790550900000,
+      "flowCfs": 1990
     }
   ]
 }
