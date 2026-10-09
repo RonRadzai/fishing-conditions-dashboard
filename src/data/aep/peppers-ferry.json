@@ -3,103 +3,39 @@
   "location": "PeppersFerryRd",
   "sourceUrl": "https://www.aep.com/recreation/hydro/peppersferryrd/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=PeppersFerryRd",
-  "generatedAt": "2026-10-09T19:17:41Z",
-  "lastUpdated": "2026-10-09T15:15:00",
-  "currentDateTime": 1791573341958,
+  "generatedAt": "2026-10-09T23:24:42Z",
+  "lastUpdated": "2026-10-09T19:15:00",
+  "currentDateTime": 1791588282036,
   "waterReleasedHoursOffset": 4,
-  "currentFlowCfs": 1806,
+  "currentFlowCfs": 1842,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1791573341958,
-      "flowCfs": 1806
-    },
-    {
-      "label": "+1h",
-      "timestamp": 1791576900000,
-      "flowCfs": 1807
-    },
-    {
-      "label": "+2h",
-      "timestamp": 1791580500000,
-      "flowCfs": 1850
-    },
-    {
-      "label": "+4h",
-      "timestamp": 1791587700000,
-      "flowCfs": 1844
-    },
-    {
-      "label": "+8h",
-      "timestamp": 1791587700000,
-      "flowCfs": 1844
-    }
-  ],
-  "forecastPoints": [
-    {
-      "timestamp": 1791501300000,
-      "flowCfs": 1803
-    },
-    {
-      "timestamp": 1791502200000,
-      "flowCfs": 1786
-    },
-    {
-      "timestamp": 1791503100000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791504000000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791504900000,
+      "timestamp": 1791588282036,
       "flowCfs": 1842
     },
     {
-      "timestamp": 1791505800000,
-      "flowCfs": 1844
+      "label": "+1h",
+      "timestamp": 1791592200000,
+      "flowCfs": 1829
     },
     {
-      "timestamp": 1791506700000,
-      "flowCfs": 10
+      "label": "+2h",
+      "timestamp": 1791595800000,
+      "flowCfs": 1845
     },
     {
-      "timestamp": 1791507600000,
-      "flowCfs": 10
+      "label": "+4h",
+      "timestamp": 1791602100000,
+      "flowCfs": 1840
     },
     {
-      "timestamp": 1791508500000,
-      "flowCfs": 1827
-    },
-    {
-      "timestamp": 1791509400000,
-      "flowCfs": 1794
-    },
-    {
-      "timestamp": 1791510300000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791511200000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791512100000,
-      "flowCfs": 1804
-    },
-    {
-      "timestamp": 1791513000000,
-      "flowCfs": 1826
-    },
-    {
-      "timestamp": 1791513900000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791514800000,
-      "flowCfs": 10
-    },
+      "label": "+8h",
+      "timestamp": 1791602100000,
+      "flowCfs": 1840
+    }
+  ],
+  "forecastPoints": [
     {
       "timestamp": 1791515700000,
       "flowCfs": 1842
@@ -423,6 +359,70 @@
     {
       "timestamp": 1791587700000,
       "flowCfs": 1844
+    },
+    {
+      "timestamp": 1791588600000,
+      "flowCfs": 1841
+    },
+    {
+      "timestamp": 1791589500000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791590400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791591300000,
+      "flowCfs": 1826
+    },
+    {
+      "timestamp": 1791592200000,
+      "flowCfs": 1829
+    },
+    {
+      "timestamp": 1791593100000,
+      "flowCfs": 1828
+    },
+    {
+      "timestamp": 1791594000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791594900000,
+      "flowCfs": 1844
+    },
+    {
+      "timestamp": 1791595800000,
+      "flowCfs": 1845
+    },
+    {
+      "timestamp": 1791596700000,
+      "flowCfs": 1841
+    },
+    {
+      "timestamp": 1791597600000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791598500000,
+      "flowCfs": 1841
+    },
+    {
+      "timestamp": 1791599400000,
+      "flowCfs": 1843
+    },
+    {
+      "timestamp": 1791600300000,
+      "flowCfs": 1841
+    },
+    {
+      "timestamp": 1791601200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791602100000,
+      "flowCfs": 1840
     }
   ]
 }
