@@ -3,111 +3,39 @@
   "location": "PeppersFerryRd",
   "sourceUrl": "https://www.aep.com/recreation/hydro/peppersferryrd/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=PeppersFerryRd",
-  "generatedAt": "2026-10-08T19:42:28Z",
-  "lastUpdated": "2026-10-08T15:30:00",
-  "currentDateTime": 1791488548259,
+  "generatedAt": "2026-10-09T00:09:42Z",
+  "lastUpdated": "2026-10-08T20:00:00",
+  "currentDateTime": 1791504582613,
   "waterReleasedHoursOffset": 4,
-  "currentFlowCfs": 319,
+  "currentFlowCfs": 1196,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1791488548259,
-      "flowCfs": 319
+      "timestamp": 1791504582613,
+      "flowCfs": 1196
     },
     {
       "label": "+1h",
-      "timestamp": 1791492300000,
-      "flowCfs": 10
+      "timestamp": 1791508500000,
+      "flowCfs": 1827
     },
     {
       "label": "+2h",
-      "timestamp": 1791495900000,
-      "flowCfs": 10
+      "timestamp": 1791512100000,
+      "flowCfs": 1804
     },
     {
       "label": "+4h",
-      "timestamp": 1791502200000,
-      "flowCfs": 1786
+      "timestamp": 1791518400000,
+      "flowCfs": 10
     },
     {
       "label": "+8h",
-      "timestamp": 1791502200000,
-      "flowCfs": 1786
+      "timestamp": 1791518400000,
+      "flowCfs": 10
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1791415800000,
-      "flowCfs": 1844
-    },
-    {
-      "timestamp": 1791416700000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791417600000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791418500000,
-      "flowCfs": 1826
-    },
-    {
-      "timestamp": 1791419400000,
-      "flowCfs": 1791
-    },
-    {
-      "timestamp": 1791420300000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791421200000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791422100000,
-      "flowCfs": 1835
-    },
-    {
-      "timestamp": 1791423000000,
-      "flowCfs": 1832
-    },
-    {
-      "timestamp": 1791423900000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791424800000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791425700000,
-      "flowCfs": 1795
-    },
-    {
-      "timestamp": 1791426600000,
-      "flowCfs": 1787
-    },
-    {
-      "timestamp": 1791427500000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791428400000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1791429300000,
-      "flowCfs": 1828
-    },
-    {
-      "timestamp": 1791430200000,
-      "flowCfs": 1831
-    },
-    {
-      "timestamp": 1791431100000,
-      "flowCfs": 10
-    },
     {
       "timestamp": 1791432000000,
       "flowCfs": 10
@@ -423,6 +351,78 @@
     {
       "timestamp": 1791502200000,
       "flowCfs": 1786
+    },
+    {
+      "timestamp": 1791503100000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791504000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791504900000,
+      "flowCfs": 1842
+    },
+    {
+      "timestamp": 1791505800000,
+      "flowCfs": 1844
+    },
+    {
+      "timestamp": 1791506700000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791507600000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791508500000,
+      "flowCfs": 1827
+    },
+    {
+      "timestamp": 1791509400000,
+      "flowCfs": 1794
+    },
+    {
+      "timestamp": 1791510300000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791511200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791512100000,
+      "flowCfs": 1804
+    },
+    {
+      "timestamp": 1791513000000,
+      "flowCfs": 1826
+    },
+    {
+      "timestamp": 1791513900000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791514800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791515700000,
+      "flowCfs": 1842
+    },
+    {
+      "timestamp": 1791516600000,
+      "flowCfs": 1839
+    },
+    {
+      "timestamp": 1791517500000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1791518400000,
+      "flowCfs": 10
     }
   ]
 }
