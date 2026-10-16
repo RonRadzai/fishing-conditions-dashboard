@@ -3,107 +3,39 @@
   "location": "Pembroke",
   "sourceUrl": "https://www.aep.com/recreation/hydro/pembroke/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=Pembroke",
-  "generatedAt": "2026-10-16T11:46:16Z",
-  "lastUpdated": "2026-10-16T07:45:00",
-  "currentDateTime": 1792151176051,
+  "generatedAt": "2026-10-16T16:12:28Z",
+  "lastUpdated": "2026-10-16T12:00:00",
+  "currentDateTime": 1792167148175,
   "waterReleasedHoursOffset": 14.5,
-  "currentFlowCfs": 3733,
+  "currentFlowCfs": 2120,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1792151176051,
-      "flowCfs": 3733
+      "timestamp": 1792167148175,
+      "flowCfs": 2120
     },
     {
       "label": "+1h",
-      "timestamp": 1792154700000,
-      "flowCfs": 3728
+      "timestamp": 1792170900000,
+      "flowCfs": 1768
     },
     {
       "label": "+2h",
-      "timestamp": 1792158300000,
-      "flowCfs": 3721
+      "timestamp": 1792174500000,
+      "flowCfs": 1849
     },
     {
       "label": "+4h",
-      "timestamp": 1792165500000,
-      "flowCfs": 3808
+      "timestamp": 1792181700000,
+      "flowCfs": 1969
     },
     {
       "label": "+8h",
-      "timestamp": 1792179900000,
-      "flowCfs": 3818
+      "timestamp": 1792196100000,
+      "flowCfs": 1796
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1792116900000,
-      "flowCfs": 3620
-    },
-    {
-      "timestamp": 1792117800000,
-      "flowCfs": 1759
-    },
-    {
-      "timestamp": 1792118700000,
-      "flowCfs": 3692
-    },
-    {
-      "timestamp": 1792119600000,
-      "flowCfs": 3655
-    },
-    {
-      "timestamp": 1792120500000,
-      "flowCfs": 3685
-    },
-    {
-      "timestamp": 1792121400000,
-      "flowCfs": 1777
-    },
-    {
-      "timestamp": 1792122300000,
-      "flowCfs": 3734
-    },
-    {
-      "timestamp": 1792123200000,
-      "flowCfs": 3707
-    },
-    {
-      "timestamp": 1792124100000,
-      "flowCfs": 3607
-    },
-    {
-      "timestamp": 1792125000000,
-      "flowCfs": 1907
-    },
-    {
-      "timestamp": 1792125900000,
-      "flowCfs": 3634
-    },
-    {
-      "timestamp": 1792126800000,
-      "flowCfs": 3824
-    },
-    {
-      "timestamp": 1792127700000,
-      "flowCfs": 3677
-    },
-    {
-      "timestamp": 1792128600000,
-      "flowCfs": 2107
-    },
-    {
-      "timestamp": 1792129500000,
-      "flowCfs": 3598
-    },
-    {
-      "timestamp": 1792130400000,
-      "flowCfs": 3584
-    },
-    {
-      "timestamp": 1792131300000,
-      "flowCfs": 3718
-    },
     {
       "timestamp": 1792132200000,
       "flowCfs": 1766
@@ -423,6 +355,74 @@
     {
       "timestamp": 1792203300000,
       "flowCfs": 1853
+    },
+    {
+      "timestamp": 1792204200000,
+      "flowCfs": 1771
+    },
+    {
+      "timestamp": 1792205100000,
+      "flowCfs": 3834
+    },
+    {
+      "timestamp": 1792206000000,
+      "flowCfs": 3693
+    },
+    {
+      "timestamp": 1792206900000,
+      "flowCfs": 1837
+    },
+    {
+      "timestamp": 1792207800000,
+      "flowCfs": 1855
+    },
+    {
+      "timestamp": 1792208700000,
+      "flowCfs": 3601
+    },
+    {
+      "timestamp": 1792209600000,
+      "flowCfs": 3743
+    },
+    {
+      "timestamp": 1792210500000,
+      "flowCfs": 1893
+    },
+    {
+      "timestamp": 1792211400000,
+      "flowCfs": 1774
+    },
+    {
+      "timestamp": 1792212300000,
+      "flowCfs": 3659
+    },
+    {
+      "timestamp": 1792213200000,
+      "flowCfs": 3699
+    },
+    {
+      "timestamp": 1792214100000,
+      "flowCfs": 1763
+    },
+    {
+      "timestamp": 1792215000000,
+      "flowCfs": 1743
+    },
+    {
+      "timestamp": 1792215900000,
+      "flowCfs": 3777
+    },
+    {
+      "timestamp": 1792216800000,
+      "flowCfs": 3716
+    },
+    {
+      "timestamp": 1792217700000,
+      "flowCfs": 1781
+    },
+    {
+      "timestamp": 1792218600000,
+      "flowCfs": 1897
     }
   ]
 }
