@@ -3,79 +3,39 @@
   "location": "McCoyFalls",
   "sourceUrl": "https://www.aep.com/recreation/hydro/mccoyfalls/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=McCoyFalls",
-  "generatedAt": "2026-10-22T22:59:40Z",
-  "lastUpdated": "2026-10-22T18:45:00",
-  "currentDateTime": 1792709980474,
+  "generatedAt": "2026-10-23T01:24:27Z",
+  "lastUpdated": "2026-10-22T21:15:00",
+  "currentDateTime": 1792718667770,
   "waterReleasedHoursOffset": 11,
-  "currentFlowCfs": 48,
+  "currentFlowCfs": 1817,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1792709980474,
-      "flowCfs": 48
+      "timestamp": 1792718667770,
+      "flowCfs": 1817
     },
     {
       "label": "+1h",
-      "timestamp": 1792713600000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+2h",
-      "timestamp": 1792717200000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+4h",
-      "timestamp": 1792724400000,
-      "flowCfs": 10
-    },
-    {
-      "label": "+8h",
-      "timestamp": 1792738800000,
-      "flowCfs": 10
-    }
-  ],
-  "forecastPoints": [
-    {
-      "timestamp": 1792662300000,
-      "flowCfs": 1831
-    },
-    {
-      "timestamp": 1792663200000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1792664100000,
-      "flowCfs": 1837
-    },
-    {
-      "timestamp": 1792665000000,
-      "flowCfs": 1819
-    },
-    {
-      "timestamp": 1792665900000,
-      "flowCfs": 1824
-    },
-    {
-      "timestamp": 1792666800000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1792667700000,
-      "flowCfs": 1799
-    },
-    {
-      "timestamp": 1792668600000,
+      "timestamp": 1792722600000,
       "flowCfs": 1800
     },
     {
-      "timestamp": 1792669500000,
-      "flowCfs": 1786
+      "label": "+2h",
+      "timestamp": 1792726200000,
+      "flowCfs": 1831
     },
     {
-      "timestamp": 1792670400000,
-      "flowCfs": 10
+      "label": "+4h",
+      "timestamp": 1792733400000,
+      "flowCfs": 1851
     },
+    {
+      "label": "+8h",
+      "timestamp": 1792747800000,
+      "flowCfs": 1797
+    }
+  ],
+  "forecastPoints": [
     {
       "timestamp": 1792671300000,
       "flowCfs": 1848
@@ -423,6 +383,46 @@
     {
       "timestamp": 1792748700000,
       "flowCfs": 1819
+    },
+    {
+      "timestamp": 1792749600000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1792750500000,
+      "flowCfs": 1792
+    },
+    {
+      "timestamp": 1792751400000,
+      "flowCfs": 1836
+    },
+    {
+      "timestamp": 1792752300000,
+      "flowCfs": 1838
+    },
+    {
+      "timestamp": 1792753200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1792754100000,
+      "flowCfs": 1830
+    },
+    {
+      "timestamp": 1792755000000,
+      "flowCfs": 1844
+    },
+    {
+      "timestamp": 1792755900000,
+      "flowCfs": 1839
+    },
+    {
+      "timestamp": 1792756800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1792757700000,
+      "flowCfs": 1852
     }
   ]
 }
