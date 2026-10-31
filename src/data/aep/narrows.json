@@ -3,143 +3,39 @@
   "location": "Narrows",
   "sourceUrl": "https://www.aep.com/recreation/hydro/narrows/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=Narrows",
-  "generatedAt": "2026-10-31T08:41:27Z",
-  "lastUpdated": "2026-10-31T04:30:00",
-  "currentDateTime": 1793436087666,
+  "generatedAt": "2026-10-31T15:07:51Z",
+  "lastUpdated": "2026-10-31T11:00:00",
+  "currentDateTime": 1793459271411,
   "waterReleasedHoursOffset": 21,
-  "currentFlowCfs": 1809,
+  "currentFlowCfs": 974,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1793436087666,
-      "flowCfs": 1809
+      "timestamp": 1793459271411,
+      "flowCfs": 974
     },
     {
       "label": "+1h",
-      "timestamp": 1793439900000,
-      "flowCfs": 1818
+      "timestamp": 1793463300000,
+      "flowCfs": 1807
     },
     {
       "label": "+2h",
-      "timestamp": 1793443500000,
-      "flowCfs": 1836
+      "timestamp": 1793466900000,
+      "flowCfs": 1820
     },
     {
       "label": "+4h",
-      "timestamp": 1793450700000,
-      "flowCfs": 1847
+      "timestamp": 1793474100000,
+      "flowCfs": 1815
     },
     {
       "label": "+8h",
-      "timestamp": 1793465100000,
-      "flowCfs": 1800
+      "timestamp": 1793488500000,
+      "flowCfs": 1785
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1793424600000,
-      "flowCfs": 1852
-    },
-    {
-      "timestamp": 1793425500000,
-      "flowCfs": 1852
-    },
-    {
-      "timestamp": 1793426400000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1793427300000,
-      "flowCfs": 1846
-    },
-    {
-      "timestamp": 1793428200000,
-      "flowCfs": 1826
-    },
-    {
-      "timestamp": 1793429100000,
-      "flowCfs": 1834
-    },
-    {
-      "timestamp": 1793430000000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1793430900000,
-      "flowCfs": 1806
-    },
-    {
-      "timestamp": 1793431800000,
-      "flowCfs": 1847
-    },
-    {
-      "timestamp": 1793432700000,
-      "flowCfs": 1846
-    },
-    {
-      "timestamp": 1793433600000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1793434500000,
-      "flowCfs": 1826
-    },
-    {
-      "timestamp": 1793435400000,
-      "flowCfs": 1805
-    },
-    {
-      "timestamp": 1793436300000,
-      "flowCfs": 1810
-    },
-    {
-      "timestamp": 1793437200000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1793438100000,
-      "flowCfs": 1795
-    },
-    {
-      "timestamp": 1793439000000,
-      "flowCfs": 1778
-    },
-    {
-      "timestamp": 1793439900000,
-      "flowCfs": 1818
-    },
-    {
-      "timestamp": 1793440800000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1793441700000,
-      "flowCfs": 1827
-    },
-    {
-      "timestamp": 1793442600000,
-      "flowCfs": 1836
-    },
-    {
-      "timestamp": 1793443500000,
-      "flowCfs": 1836
-    },
-    {
-      "timestamp": 1793444400000,
-      "flowCfs": 10
-    },
-    {
-      "timestamp": 1793445300000,
-      "flowCfs": 1851
-    },
-    {
-      "timestamp": 1793446200000,
-      "flowCfs": 1845
-    },
-    {
-      "timestamp": 1793447100000,
-      "flowCfs": 1848
-    },
     {
       "timestamp": 1793448000000,
       "flowCfs": 10
@@ -423,6 +319,110 @@
     {
       "timestamp": 1793514600000,
       "flowCfs": 1828
+    },
+    {
+      "timestamp": 1793515500000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793516400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793517300000,
+      "flowCfs": 1832
+    },
+    {
+      "timestamp": 1793518200000,
+      "flowCfs": 1829
+    },
+    {
+      "timestamp": 1793519100000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793520000000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793520900000,
+      "flowCfs": 1841
+    },
+    {
+      "timestamp": 1793521800000,
+      "flowCfs": 1840
+    },
+    {
+      "timestamp": 1793522700000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793523600000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793524500000,
+      "flowCfs": 1832
+    },
+    {
+      "timestamp": 1793525400000,
+      "flowCfs": 1819
+    },
+    {
+      "timestamp": 1793526300000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793527200000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793528100000,
+      "flowCfs": 1843
+    },
+    {
+      "timestamp": 1793529000000,
+      "flowCfs": 1839
+    },
+    {
+      "timestamp": 1793529900000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793530800000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793531700000,
+      "flowCfs": 1832
+    },
+    {
+      "timestamp": 1793532600000,
+      "flowCfs": 1844
+    },
+    {
+      "timestamp": 1793533500000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793534400000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793535300000,
+      "flowCfs": 1850
+    },
+    {
+      "timestamp": 1793536200000,
+      "flowCfs": 1848
+    },
+    {
+      "timestamp": 1793537100000,
+      "flowCfs": 10
+    },
+    {
+      "timestamp": 1793538000000,
+      "flowCfs": 10
     }
   ]
 }
