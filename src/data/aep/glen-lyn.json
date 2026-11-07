@@ -3,123 +3,39 @@
   "location": "GlenLyn",
   "sourceUrl": "https://www.aep.com/recreation/hydro/glenlyn/",
   "sourceEndpoint": "https://aepcom-api.aep.com/api/hydro/forecast?location=GlenLyn",
-  "generatedAt": "2026-11-06T23:42:10Z",
-  "lastUpdated": "2026-11-06T18:30:00",
-  "currentDateTime": 1794008530921,
+  "generatedAt": "2026-11-07T04:56:44Z",
+  "lastUpdated": "2026-11-06T23:45:00",
+  "currentDateTime": 1794027404783,
   "waterReleasedHoursOffset": 22.5,
-  "currentFlowCfs": 1875,
+  "currentFlowCfs": 1803,
   "forecastCheckpoints": [
     {
       "label": "Now",
-      "timestamp": 1794008530921,
-      "flowCfs": 1875
+      "timestamp": 1794027404783,
+      "flowCfs": 1803
     },
     {
       "label": "+1h",
-      "timestamp": 1794012300000,
-      "flowCfs": 1818
+      "timestamp": 1794031200000,
+      "flowCfs": 2039
     },
     {
       "label": "+2h",
-      "timestamp": 1794015900000,
-      "flowCfs": 1834
+      "timestamp": 1794034800000,
+      "flowCfs": 2077
     },
     {
       "label": "+4h",
-      "timestamp": 1794023100000,
-      "flowCfs": 1833
+      "timestamp": 1794042000000,
+      "flowCfs": 1920
     },
     {
       "label": "+8h",
-      "timestamp": 1794037500000,
-      "flowCfs": 1899
+      "timestamp": 1794056400000,
+      "flowCfs": 1804
     }
   ],
   "forecastPoints": [
-    {
-      "timestamp": 1794002400000,
-      "flowCfs": 1792
-    },
-    {
-      "timestamp": 1794003300000,
-      "flowCfs": 1775
-    },
-    {
-      "timestamp": 1794004200000,
-      "flowCfs": 1836
-    },
-    {
-      "timestamp": 1794005100000,
-      "flowCfs": 1850
-    },
-    {
-      "timestamp": 1794006000000,
-      "flowCfs": 1864
-    },
-    {
-      "timestamp": 1794006900000,
-      "flowCfs": 1908
-    },
-    {
-      "timestamp": 1794007800000,
-      "flowCfs": 1888
-    },
-    {
-      "timestamp": 1794008700000,
-      "flowCfs": 1872
-    },
-    {
-      "timestamp": 1794009600000,
-      "flowCfs": 1987
-    },
-    {
-      "timestamp": 1794010500000,
-      "flowCfs": 1778
-    },
-    {
-      "timestamp": 1794011400000,
-      "flowCfs": 1833
-    },
-    {
-      "timestamp": 1794012300000,
-      "flowCfs": 1818
-    },
-    {
-      "timestamp": 1794013200000,
-      "flowCfs": 1859
-    },
-    {
-      "timestamp": 1794014100000,
-      "flowCfs": 1821
-    },
-    {
-      "timestamp": 1794015000000,
-      "flowCfs": 1752
-    },
-    {
-      "timestamp": 1794015900000,
-      "flowCfs": 1834
-    },
-    {
-      "timestamp": 1794016800000,
-      "flowCfs": 1851
-    },
-    {
-      "timestamp": 1794017700000,
-      "flowCfs": 1776
-    },
-    {
-      "timestamp": 1794018600000,
-      "flowCfs": 1833
-    },
-    {
-      "timestamp": 1794019500000,
-      "flowCfs": 1937
-    },
-    {
-      "timestamp": 1794020400000,
-      "flowCfs": 1842
-    },
     {
       "timestamp": 1794021300000,
       "flowCfs": 1768
@@ -423,6 +339,90 @@
     {
       "timestamp": 1794088800000,
       "flowCfs": 1829
+    },
+    {
+      "timestamp": 1794089700000,
+      "flowCfs": 1992
+    },
+    {
+      "timestamp": 1794090600000,
+      "flowCfs": 1755
+    },
+    {
+      "timestamp": 1794091500000,
+      "flowCfs": 1763
+    },
+    {
+      "timestamp": 1794092400000,
+      "flowCfs": 1860
+    },
+    {
+      "timestamp": 1794093300000,
+      "flowCfs": 1769
+    },
+    {
+      "timestamp": 1794094200000,
+      "flowCfs": 1851
+    },
+    {
+      "timestamp": 1794095100000,
+      "flowCfs": 1863
+    },
+    {
+      "timestamp": 1794096000000,
+      "flowCfs": 1813
+    },
+    {
+      "timestamp": 1794096900000,
+      "flowCfs": 2019
+    },
+    {
+      "timestamp": 1794097800000,
+      "flowCfs": 1891
+    },
+    {
+      "timestamp": 1794098700000,
+      "flowCfs": 1917
+    },
+    {
+      "timestamp": 1794099600000,
+      "flowCfs": 1850
+    },
+    {
+      "timestamp": 1794100500000,
+      "flowCfs": 1894
+    },
+    {
+      "timestamp": 1794101400000,
+      "flowCfs": 1853
+    },
+    {
+      "timestamp": 1794102300000,
+      "flowCfs": 1944
+    },
+    {
+      "timestamp": 1794103200000,
+      "flowCfs": 1961
+    },
+    {
+      "timestamp": 1794104100000,
+      "flowCfs": 1912
+    },
+    {
+      "timestamp": 1794105000000,
+      "flowCfs": 1859
+    },
+    {
+      "timestamp": 1794105900000,
+      "flowCfs": 1946
+    },
+    {
+      "timestamp": 1794106800000,
+      "flowCfs": 1903
+    },
+    {
+      "timestamp": 1794107700000,
+      "flowCfs": 1938
     }
   ]
 }
